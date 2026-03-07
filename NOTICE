@@ -1,0 +1,36 @@
+Capsule — Capsule Protocol Specification (CPS) Reference Implementation
+Copyright 2026 Quantum Pipes Technologies, LLC
+
+This product includes software developed at
+Quantum Pipes Technologies, LLC (https://quantumpipes.com/).
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+---
+
+PATENT NOTICE
+
+This software is covered by one or more pending patent applications
+and an additional patent grant. See the PATENTS.md file for details.
+
+---
+
+THIRD-PARTY NOTICES
+
+This software uses the following open-source libraries:
+
+- PyNaCl (Apache 2.0) - Ed25519 cryptographic signatures
+- liboqs-python (MIT) - Post-quantum cryptographic signatures (optional)
+- SQLAlchemy (MIT) - Database toolkit (optional, with [storage] or [postgres])
+- aiosqlite (MIT) - Async SQLite driver (optional, with [storage])
+- asyncpg (Apache 2.0) - Async PostgreSQL driver (optional, with [postgres])

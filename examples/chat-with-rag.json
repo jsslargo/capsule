@@ -1,0 +1,131 @@
+{
+  "id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+  "type": "chat",
+  "domain": "chat",
+  "parent_id": null,
+  "sequence": 312,
+  "previous_hash": "a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3",
+  "trigger": {
+    "type": "user_request",
+    "source": "hub_chat",
+    "timestamp": "2026-03-07T09:15:33.482901+00:00",
+    "request": "What is our refund policy for enterprise customers?",
+    "correlation_id": "msg-f8a9b0c1",
+    "user_id": "james.martinez@example.com"
+  },
+  "context": {
+    "agent_id": "chat-agent",
+    "session_id": "sess-chat-7d8e9f0a",
+    "environment": {
+      "model": "anthropic/claude-sonnet-4-20250514",
+      "turn": 3,
+      "history_length": 6,
+      "vault_collections": ["policies", "legal"],
+      "temperature": 0.1
+    }
+  },
+  "reasoning": {
+    "analysis": "User is asking about enterprise refund policy. This is a factual question that should be answered from the policy vault, not from general knowledge. The policies collection contains the current refund policy document.",
+    "options": [
+      {
+        "id": "opt_0",
+        "description": "Answer from vault (RAG)",
+        "pros": [
+          "Uses authoritative source documents",
+          "Cites specific policy sections",
+          "Verifiable against source material"
+        ],
+        "cons": [],
+        "estimated_impact": {},
+        "feasibility": 0.98,
+        "risks": [],
+        "selected": true,
+        "rejection_reason": ""
+      },
+      {
+        "id": "opt_1",
+        "description": "Answer from general knowledge",
+        "pros": [
+          "Faster response"
+        ],
+        "cons": [
+          "May not reflect current policy",
+          "Cannot cite source",
+          "Risk of hallucination"
+        ],
+        "estimated_impact": {},
+        "feasibility": 0.5,
+        "risks": [
+          "Providing outdated or incorrect policy information"
+        ],
+        "selected": false,
+        "rejection_reason": "Policy questions must be answered from authoritative vault sources, not general knowledge."
+      }
+    ],
+    "options_considered": [
+      "Answer from vault (RAG)",
+      "Answer from general knowledge"
+    ],
+    "selected_option": "Answer from vault (RAG)",
+    "reasoning": "Policy questions require authoritative sources. The vault contains the current enterprise refund policy. RAG ensures the answer is grounded in actual documents.",
+    "confidence": 0.96,
+    "model": "anthropic/claude-sonnet-4-20250514",
+    "prompt_hash": "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069"
+  },
+  "authority": {
+    "type": "autonomous",
+    "approver": null,
+    "policy_reference": null,
+    "chain": [],
+    "escalation_reason": null
+  },
+  "execution": {
+    "tool_calls": [
+      {
+        "tool": "vault_search",
+        "arguments": {
+          "query": "enterprise customer refund policy",
+          "collections": ["policies", "legal"],
+          "top_k": 5
+        },
+        "result": {
+          "documents_found": 3,
+          "top_match": {
+            "title": "Enterprise Refund Policy v2.1",
+            "path": "policies/refund-policy-enterprise.md",
+            "relevance_score": 0.94
+          },
+          "sources": [
+            "policies/refund-policy-enterprise.md",
+            "legal/service-agreement-template.md",
+            "policies/billing-faq.md"
+          ]
+        },
+        "success": true,
+        "duration_ms": 180,
+        "error": null
+      }
+    ],
+    "duration_ms": 2340,
+    "resources_used": {
+      "tokens_in": 3200,
+      "tokens_out": 420,
+      "vault_queries": 1,
+      "documents_retrieved": 3
+    }
+  },
+  "outcome": {
+    "status": "success",
+    "result": "Enterprise customers are eligible for a full refund within 30 days of purchase, and a prorated refund within 90 days, per Section 4.2 of the Enterprise Refund Policy v2.1. After 90 days, refunds are handled on a case-by-case basis by the account management team. Annual contracts have separate terms outlined in the service agreement.",
+    "summary": "Answered enterprise refund policy question from 3 vault sources",
+    "error": null,
+    "side_effects": [],
+    "metrics": {
+      "tokens_in": 3200,
+      "tokens_out": 420,
+      "latency_ms": 2340,
+      "cost_usd": 0.0051,
+      "sources_cited": 3
+    }
+  }
+}

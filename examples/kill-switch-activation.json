@@ -1,0 +1,142 @@
+{
+  "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+  "type": "kill",
+  "domain": "system",
+  "parent_id": null,
+  "sequence": 187,
+  "previous_hash": "f1e2d3c4b5a6f7e8d9c0b1a2f3e4d5c6b7a8f9e0d1c2b3a4f5e6d7c8b9a0f1e2",
+  "trigger": {
+    "type": "system",
+    "source": "anomaly-detector",
+    "timestamp": "2026-03-07T03:14:22+00:00",
+    "request": "Emergency stop: agent attempted to modify production database schema without approval",
+    "correlation_id": "anomaly-2026-0307-003",
+    "user_id": null
+  },
+  "context": {
+    "agent_id": "data-migration-agent",
+    "session_id": "sess-e5f6a7b8",
+    "environment": {
+      "cluster": "prod-us-east-1",
+      "database": "payments_db",
+      "attempted_operation": "ALTER TABLE transactions ADD COLUMN metadata JSONB",
+      "risk_score": 0.97,
+      "running_agents": 4
+    }
+  },
+  "reasoning": {
+    "analysis": "Agent attempted DDL operation (ALTER TABLE) on production database without human approval. This violates POLICY-DB-DDL-001 which requires human approval for all schema changes in production. Risk score 0.97 exceeds hard-kill threshold of 0.95.",
+    "options": [
+      {
+        "id": "opt_0",
+        "description": "Hard kill: terminate all agents immediately",
+        "pros": [
+          "Prevents any further unauthorized operations",
+          "Protects production database integrity"
+        ],
+        "cons": [
+          "Interrupts 3 other running agents",
+          "Pending tasks will be lost"
+        ],
+        "estimated_impact": {
+          "scope": "all-agents",
+          "severity": "high",
+          "reversibility": "manual-restart"
+        },
+        "feasibility": 1.0,
+        "risks": [],
+        "selected": true,
+        "rejection_reason": ""
+      },
+      {
+        "id": "opt_1",
+        "description": "Soft kill: terminate only the offending agent",
+        "pros": [
+          "Other agents continue working"
+        ],
+        "cons": [
+          "If the agent has child processes, they may continue the operation",
+          "Risk score above hard-kill threshold"
+        ],
+        "estimated_impact": {
+          "scope": "single-agent",
+          "severity": "medium",
+          "reversibility": "automatic"
+        },
+        "feasibility": 0.6,
+        "risks": [
+          "Incomplete termination may allow the DDL to proceed"
+        ],
+        "selected": false,
+        "rejection_reason": "Risk score 0.97 exceeds hard-kill threshold. Soft kill does not guarantee prevention of the DDL operation."
+      }
+    ],
+    "options_considered": [
+      "Hard kill: terminate all agents immediately",
+      "Soft kill: terminate only the offending agent"
+    ],
+    "selected_option": "Hard kill: terminate all agents immediately",
+    "reasoning": "Risk score 0.97 exceeds hard-kill threshold of 0.95. Production database schema integrity is non-negotiable. Hard kill is the only option that guarantees the DDL does not execute.",
+    "confidence": 0.99,
+    "model": null,
+    "prompt_hash": null
+  },
+  "authority": {
+    "type": "autonomous",
+    "approver": null,
+    "policy_reference": "POLICY-KILL-SWITCH-001",
+    "chain": [
+      {
+        "level": 1,
+        "actor": "anomaly-detector",
+        "decision": "kill",
+        "reason": "Risk score 0.97 > threshold 0.95"
+      }
+    ],
+    "escalation_reason": null
+  },
+  "execution": {
+    "tool_calls": [
+      {
+        "tool": "agent_terminate",
+        "arguments": {
+          "mode": "hard",
+          "target": "all",
+          "reason": "Kill switch: unauthorized DDL on production database"
+        },
+        "result": {
+          "agents_terminated": 4,
+          "tasks_cancelled": 7,
+          "ddl_prevented": true
+        },
+        "success": true,
+        "duration_ms": 45,
+        "error": null
+      }
+    ],
+    "duration_ms": 45,
+    "resources_used": {}
+  },
+  "outcome": {
+    "status": "blocked",
+    "result": {
+      "agents_terminated": 4,
+      "tasks_cancelled": 7,
+      "database_state": "unchanged",
+      "notification_sent": "ops-team@example.com"
+    },
+    "summary": "Kill switch activated: 4 agents terminated, 7 tasks cancelled. Production database schema unchanged.",
+    "error": "Kill switch activated: mode=hard, trigger=unauthorized DDL (ALTER TABLE), risk_score=0.97",
+    "side_effects": [
+      "4 running agents terminated",
+      "7 pending tasks cancelled",
+      "Alert sent to ops-team@example.com",
+      "Incident ticket INC-2026-0307-003 created"
+    ],
+    "metrics": {
+      "detection_to_kill_ms": 45,
+      "risk_score": 0.97,
+      "agents_affected": 4
+    }
+  }
+}

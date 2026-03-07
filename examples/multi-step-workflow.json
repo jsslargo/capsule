@@ -1,0 +1,255 @@
+[
+  {
+    "_comment": "WORKFLOW capsule: the parent. Orchestrates the deploy pipeline.",
+    "id": "a1b2c3d4-e5f6-4789-abcd-ef1234567890",
+    "type": "workflow",
+    "domain": "agents",
+    "parent_id": null,
+    "sequence": 100,
+    "previous_hash": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+    "trigger": {
+      "type": "scheduled",
+      "source": "cron",
+      "timestamp": "2026-03-07T02:00:00+00:00",
+      "request": "Nightly deployment pipeline: build, test, deploy staging",
+      "correlation_id": "pipeline-nightly-0307",
+      "user_id": null
+    },
+    "context": {
+      "agent_id": "pipeline-orchestrator",
+      "session_id": null,
+      "environment": {
+        "pipeline": "nightly-deploy",
+        "branch": "main",
+        "commit": "a8f5e3b"
+      }
+    },
+    "reasoning": {
+      "analysis": "Nightly pipeline triggered by cron. Main branch has 3 new commits since last deploy.",
+      "options": [],
+      "options_considered": [
+        "Execute pipeline"
+      ],
+      "selected_option": "Execute pipeline",
+      "reasoning": "Scheduled pipeline with new commits. Proceeding per schedule.",
+      "confidence": 1.0,
+      "model": null,
+      "prompt_hash": null
+    },
+    "authority": {
+      "type": "policy",
+      "approver": null,
+      "policy_reference": "POLICY-NIGHTLY-PIPELINE",
+      "chain": [],
+      "escalation_reason": null
+    },
+    "execution": {
+      "tool_calls": [],
+      "duration_ms": 184000,
+      "resources_used": {
+        "child_capsules": 2
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "result": {
+        "steps_completed": 2,
+        "steps_total": 2,
+        "staging_url": "https://staging.example.com"
+      },
+      "summary": "Nightly pipeline completed: build + staging deploy. 2/2 steps succeeded.",
+      "error": null,
+      "side_effects": [
+        "Docker image built and pushed",
+        "Staging deployment updated"
+      ],
+      "metrics": {
+        "total_duration_ms": 184000
+      }
+    }
+  },
+  {
+    "_comment": "AGENT capsule: child of the workflow. Handles the build step.",
+    "id": "b2c3d4e5-1234-4abc-def0-123456789abc",
+    "type": "agent",
+    "domain": "agents",
+    "parent_id": "a1b2c3d4-e5f6-4789-abcd-ef1234567890",
+    "sequence": 101,
+    "previous_hash": "2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+    "trigger": {
+      "type": "agent",
+      "source": "pipeline-orchestrator",
+      "timestamp": "2026-03-07T02:00:01+00:00",
+      "request": "Build Docker image for commit a8f5e3b",
+      "correlation_id": "pipeline-nightly-0307",
+      "user_id": null
+    },
+    "context": {
+      "agent_id": "build-agent",
+      "session_id": null,
+      "environment": {
+        "commit": "a8f5e3b",
+        "branch": "main",
+        "dockerfile": "Dockerfile.production"
+      }
+    },
+    "reasoning": {
+      "analysis": "Build step of nightly pipeline. Standard Docker build from production Dockerfile.",
+      "options": [],
+      "options_considered": [
+        "Build with production Dockerfile"
+      ],
+      "selected_option": "Build with production Dockerfile",
+      "reasoning": "Standard build configuration for nightly pipeline",
+      "confidence": 0.99,
+      "model": null,
+      "prompt_hash": null
+    },
+    "authority": {
+      "type": "autonomous",
+      "approver": null,
+      "policy_reference": null,
+      "chain": [],
+      "escalation_reason": null
+    },
+    "execution": {
+      "tool_calls": [
+        {
+          "tool": "docker_build",
+          "arguments": {
+            "dockerfile": "Dockerfile.production",
+            "tag": "registry.example.com/app:a8f5e3b",
+            "context": "."
+          },
+          "result": {
+            "image_id": "sha256:abc123",
+            "size_mb": 342,
+            "layers": 12
+          },
+          "success": true,
+          "duration_ms": 67000,
+          "error": null
+        },
+        {
+          "tool": "docker_push",
+          "arguments": {
+            "image": "registry.example.com/app:a8f5e3b"
+          },
+          "result": {
+            "digest": "sha256:def456"
+          },
+          "success": true,
+          "duration_ms": 23000,
+          "error": null
+        }
+      ],
+      "duration_ms": 90000,
+      "resources_used": {
+        "cpu_seconds": 180,
+        "disk_mb": 342
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "result": {
+        "image": "registry.example.com/app:a8f5e3b",
+        "digest": "sha256:def456"
+      },
+      "summary": "Docker image built and pushed: registry.example.com/app:a8f5e3b",
+      "error": null,
+      "side_effects": [
+        "Docker image pushed to registry.example.com"
+      ],
+      "metrics": {
+        "build_duration_ms": 67000,
+        "push_duration_ms": 23000,
+        "image_size_mb": 342
+      }
+    }
+  },
+  {
+    "_comment": "TOOL capsule: grandchild. The kubectl apply executed by the deploy agent.",
+    "id": "c3d4e5f6-5678-4def-0123-456789abcdef",
+    "type": "tool",
+    "domain": "agents",
+    "parent_id": "a1b2c3d4-e5f6-4789-abcd-ef1234567890",
+    "sequence": 102,
+    "previous_hash": "3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+    "trigger": {
+      "type": "agent",
+      "source": "deploy-agent",
+      "timestamp": "2026-03-07T02:01:31+00:00",
+      "request": "Deploy image a8f5e3b to staging",
+      "correlation_id": "pipeline-nightly-0307",
+      "user_id": null
+    },
+    "context": {
+      "agent_id": "deploy-agent",
+      "session_id": null,
+      "environment": {
+        "cluster": "staging-us-east-1",
+        "namespace": "default",
+        "image": "registry.example.com/app:a8f5e3b"
+      }
+    },
+    "reasoning": {
+      "analysis": "Deploy step of nightly pipeline. Apply updated manifest to staging cluster.",
+      "options": [],
+      "options_considered": [
+        "kubectl apply to staging"
+      ],
+      "selected_option": "kubectl apply to staging",
+      "reasoning": "Standard staging deployment",
+      "confidence": 0.99,
+      "model": null,
+      "prompt_hash": null
+    },
+    "authority": {
+      "type": "policy",
+      "approver": null,
+      "policy_reference": "POLICY-STAGING-AUTO-DEPLOY",
+      "chain": [],
+      "escalation_reason": null
+    },
+    "execution": {
+      "tool_calls": [
+        {
+          "tool": "kubectl_apply",
+          "arguments": {
+            "manifest": "k8s/staging.yaml",
+            "namespace": "default",
+            "image_override": "registry.example.com/app:a8f5e3b"
+          },
+          "result": {
+            "pods_updated": 3,
+            "rollout_status": "complete"
+          },
+          "success": true,
+          "duration_ms": 94000,
+          "error": null
+        }
+      ],
+      "duration_ms": 94000,
+      "resources_used": {
+        "pods_updated": 3
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "result": {
+        "pods_updated": 3,
+        "endpoint": "https://staging.example.com"
+      },
+      "summary": "Staging deployment complete: 3 pods updated to a8f5e3b",
+      "error": null,
+      "side_effects": [
+        "Staging deployment updated to a8f5e3b",
+        "3 pods rolled out"
+      ],
+      "metrics": {
+        "rollout_duration_ms": 94000,
+        "pods_updated": 3
+      }
+    }
+  }
+]

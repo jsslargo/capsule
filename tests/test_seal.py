@@ -1,0 +1,251 @@
+"""
+Tests for Seal (cryptographic sealing).
+
+Tests SHA3-256 hashing and Ed25519 signing.
+These tests cover the Tier 1 (Ed25519-only) behavior.
+"""
+
+import tempfile
+from pathlib import Path
+
+import pytest
+
+from qp_capsule.capsule import Capsule, ReasoningSection, TriggerSection
+from qp_capsule.seal import Seal, compute_hash
+
+
+@pytest.fixture
+def temp_key_path():
+    """Provide a temporary key path for testing."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir) / "test_key"
+
+
+@pytest.fixture
+def seal(temp_key_path):
+    """Provide a Seal instance with temporary key."""
+    return Seal(key_path=temp_key_path)
+
+
+@pytest.fixture
+def sample_capsule():
+    """Provide a sample Capsule for testing."""
+    return Capsule(
+        trigger=TriggerSection(
+            type="user_request",
+            source="test_user",
+            request="Test task",
+        ),
+        reasoning=ReasoningSection(
+            options_considered=["option_a", "option_b"],
+            selected_option="option_a",
+            reasoning="Option A is the best choice",
+            confidence=0.9,
+        ),
+    )
+
+
+class TestSealCreation:
+    """Test Seal initialization."""
+
+    def test_creates_key_on_first_use(self, seal, temp_key_path, sample_capsule):
+        """Key is created on first seal operation."""
+        assert not temp_key_path.exists()
+
+        seal.seal(sample_capsule)
+
+        assert temp_key_path.exists()
+
+    def test_key_has_restricted_permissions(self, seal, temp_key_path, sample_capsule):
+        """Key file has owner-only permissions."""
+        seal.seal(sample_capsule)
+
+        # Check permissions (0o600 = owner read/write only)
+        mode = temp_key_path.stat().st_mode & 0o777
+        assert mode == 0o600
+
+    def test_reuses_existing_key(self, temp_key_path, sample_capsule):
+        """Same key is used across instances."""
+        seal1 = Seal(key_path=temp_key_path)
+        seal2 = Seal(key_path=temp_key_path)
+
+        seal1.seal(sample_capsule)
+        fingerprint1 = seal1.get_key_fingerprint()
+
+        capsule2 = Capsule()
+        seal2.seal(capsule2)
+        fingerprint2 = seal2.get_key_fingerprint()
+
+        assert fingerprint1 == fingerprint2
+
+
+class TestSealing:
+    """Test Capsule sealing."""
+
+    def test_seal_sets_hash(self, seal, sample_capsule):
+        """Sealing sets the hash field."""
+        assert sample_capsule.hash == ""
+
+        seal.seal(sample_capsule)
+
+        assert sample_capsule.hash != ""
+        assert len(sample_capsule.hash) == 64  # SHA3-256 hex = 64 chars
+
+    def test_seal_sets_signature(self, seal, sample_capsule):
+        """Sealing sets the signature field."""
+        assert sample_capsule.signature == ""
+
+        seal.seal(sample_capsule)
+
+        assert sample_capsule.signature != ""
+
+    def test_seal_sets_metadata(self, seal, sample_capsule):
+        """Sealing sets signed_at and signed_by."""
+        assert sample_capsule.signed_at is None
+        assert sample_capsule.signed_by == ""
+
+        seal.seal(sample_capsule)
+
+        assert sample_capsule.signed_at is not None
+        assert sample_capsule.signed_by != ""
+
+    def test_sealed_capsule_is_sealed(self, seal, sample_capsule):
+        """is_sealed() returns True after sealing."""
+        assert not sample_capsule.is_sealed()
+
+        seal.seal(sample_capsule)
+
+        assert sample_capsule.is_sealed()
+
+    def test_same_content_same_hash(self, seal):
+        """Same content produces same hash."""
+        from datetime import UTC, datetime
+
+        fixed_time = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
+
+        capsule1 = Capsule(
+            trigger=TriggerSection(type="test", source="test", request="test", timestamp=fixed_time)
+        )
+        capsule2 = Capsule(
+            trigger=TriggerSection(type="test", source="test", request="test", timestamp=fixed_time)
+        )
+
+        # Force same ID for comparison
+        capsule2.id = capsule1.id
+
+        hash1 = compute_hash(capsule1.to_dict())
+        hash2 = compute_hash(capsule2.to_dict())
+
+        assert hash1 == hash2
+
+    def test_different_content_different_hash(self, seal):
+        """Different content produces different hash."""
+        capsule1 = Capsule(trigger=TriggerSection(type="test", source="test", request="request_1"))
+        capsule2 = Capsule(trigger=TriggerSection(type="test", source="test", request="request_2"))
+
+        hash1 = compute_hash(capsule1.to_dict())
+        hash2 = compute_hash(capsule2.to_dict())
+
+        assert hash1 != hash2
+
+
+class TestVerification:
+    """Test Capsule verification."""
+
+    def test_verify_valid_capsule(self, seal, sample_capsule):
+        """Valid sealed Capsule verifies successfully."""
+        seal.seal(sample_capsule)
+
+        assert seal.verify(sample_capsule) is True
+
+    def test_verify_unsealed_capsule_fails(self, seal, sample_capsule):
+        """Unsealed Capsule fails verification."""
+        assert seal.verify(sample_capsule) is False
+
+    def test_verify_tampered_content_fails(self, seal, sample_capsule):
+        """Tampered content fails verification."""
+        seal.seal(sample_capsule)
+
+        # Tamper with content
+        sample_capsule.reasoning.reasoning = "TAMPERED"
+
+        assert seal.verify(sample_capsule) is False
+
+    def test_verify_tampered_hash_fails(self, seal, sample_capsule):
+        """Tampered hash fails verification."""
+        seal.seal(sample_capsule)
+
+        # Tamper with hash
+        sample_capsule.hash = "a" * 64
+
+        assert seal.verify(sample_capsule) is False
+
+    def test_verify_tampered_signature_fails(self, seal, sample_capsule):
+        """Tampered signature fails verification."""
+        seal.seal(sample_capsule)
+
+        # Tamper with signature
+        sample_capsule.signature = "b" * len(sample_capsule.signature)
+
+        assert seal.verify(sample_capsule) is False
+
+
+class TestPublicKey:
+    """Test public key operations."""
+
+    def test_get_public_key(self, seal, sample_capsule):
+        """Can get public key as hex string."""
+        seal.seal(sample_capsule)  # Ensure key exists
+
+        public_key = seal.get_public_key()
+
+        assert isinstance(public_key, str)
+        assert len(public_key) == 64  # Ed25519 public key = 32 bytes = 64 hex chars
+
+    def test_get_key_fingerprint(self, seal, sample_capsule):
+        """Fingerprint is first 16 chars of public key."""
+        seal.seal(sample_capsule)
+
+        fingerprint = seal.get_key_fingerprint()
+        public_key = seal.get_public_key()
+
+        assert fingerprint == public_key[:16]
+
+    def test_verify_with_key(self, seal, sample_capsule):
+        """Can verify with explicit public key."""
+        seal.seal(sample_capsule)
+        public_key = seal.get_public_key()
+
+        # Create new Seal instance (no access to private key)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            other_seal = Seal(key_path=Path(tmpdir) / "other_key")
+
+            # Should be able to verify with public key
+            assert other_seal.verify_with_key(sample_capsule, public_key) is True
+
+
+class TestComputeHash:
+    """Test standalone hash function."""
+
+    def test_compute_hash_returns_hex(self):
+        """compute_hash returns hex string."""
+        result = compute_hash({"key": "value"})
+
+        assert isinstance(result, str)
+        assert len(result) == 64
+
+    def test_compute_hash_is_deterministic(self):
+        """Same input produces same hash."""
+        data = {"a": 1, "b": 2}
+
+        hash1 = compute_hash(data)
+        hash2 = compute_hash(data)
+
+        assert hash1 == hash2
+
+    def test_compute_hash_key_order_independent(self):
+        """Hash is same regardless of key order in input."""
+        data1 = {"a": 1, "b": 2}
+        data2 = {"b": 2, "a": 1}
+
+        assert compute_hash(data1) == compute_hash(data2)
