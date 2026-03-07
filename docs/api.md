@@ -3,11 +3,12 @@ title: "API Reference"
 description: "Complete API reference for Capsule: every class, method, parameter, and type."
 date_modified: "2026-03-07"
 ai_context: |
-  Complete Python API reference for the qp-capsule package. Covers Capsule model
+  Complete Python API reference for the qp-capsule package v1.1.0. Covers Capsule model
   (6 sections, 8 CapsuleTypes), Seal (seal, verify, verify_with_key, compute_hash),
   CapsuleChain (add, verify, seal_and_store), CapsuleStorageProtocol (7 methods),
-  CapsuleStorage (SQLite), PostgresCapsuleStorage (multi-tenant), and exception hierarchy.
-  All signatures verified against source.
+  CapsuleStorage (SQLite), PostgresCapsuleStorage (multi-tenant), exception hierarchy,
+  and the v1.1.0 high-level API: Capsules class, @audit() decorator, current() context
+  variable, and mount_capsules() FastAPI integration. All signatures verified against source.
 ---
 
 # API Reference
@@ -20,6 +21,9 @@ ai_context: |
 
 ```python
 from qp_capsule import (
+    # High-Level API (v1.1.0+)
+    Capsules,
+
     # Capsule Model
     Capsule, CapsuleType,
     TriggerSection, ContextSection,
@@ -43,6 +47,9 @@ from qp_capsule import (
     # Exceptions
     CapsuleError, SealError, ChainError, StorageError,
 )
+
+# FastAPI Integration (optional, requires fastapi)
+from qp_capsule.integrations.fastapi import mount_capsules
 ```
 
 ---
@@ -495,8 +502,116 @@ asyncio.run(main())
 
 ---
 
+## Capsules (High-Level API)
+
+> **Added in v1.1.0.**
+
+Single entry point that owns storage, chain, and seal internally.
+
+<!-- VERIFIED: src/qp_capsule/audit.py:130-216 -->
+
+```python
+class Capsules:
+    def __init__(
+        self,
+        url: str | None = None,
+        *,
+        storage: CapsuleStorageProtocol | None = None,
+    )
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | `str \| None` | `None` | `None` = SQLite default; `"postgresql://..."` = PostgreSQL; other string = SQLite at path |
+| `storage` | `CapsuleStorageProtocol \| None` | `None` | Custom storage backend (overrides `url`) |
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `storage` | `CapsuleStorageProtocol` | The underlying storage backend |
+| `chain` | `CapsuleChain` | The hash chain instance |
+| `seal` | `Seal` | The Ed25519 sealing instance |
+
+### Methods
+
+**`current() -> Capsule`**
+Get the active Capsule inside an `@audit()` decorated function. Raises `RuntimeError` if called outside.
+
+**`async close() -> None`**
+Release storage backend resources.
+
+**`audit(*, type, tenant_from=None, tenant_id=None, trigger_from=0, source=None, domain="agents", swallow_errors=True) -> Callable`**
+Decorator factory. See below.
+
+---
+
+## @capsules.audit() Decorator
+
+<!-- VERIFIED: src/qp_capsule/audit.py:218-389 -->
+
+Wraps any async or sync function with automatic Capsule creation, sealing, and storage.
+
+```python
+@capsules.audit(type="agent", tenant_from="site_id")
+async def run_agent(task: str, *, site_id: str):
+    cap = capsules.current()
+    cap.reasoning.model = "gpt-4o"
+    result = await llm.complete(task)
+    return result
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | `str \| CapsuleType` | *(required)* | Capsule type |
+| `tenant_from` | `str \| None` | `None` | Kwarg name to extract `tenant_id` from |
+| `tenant_id` | `str \| Callable \| None` | `None` | Static string or `(args, kwargs) -> str` |
+| `trigger_from` | `str \| int \| None` | `0` | Arg name or position for `trigger.request` |
+| `source` | `str \| None` | `None` | Static `trigger.source` (default: function qualname) |
+| `domain` | `str` | `"agents"` | Capsule domain |
+| `swallow_errors` | `bool` | `True` | If `True`, capsule failures are logged and swallowed |
+
+**Guarantees:**
+- Return value is never modified
+- Exceptions are always re-raised
+- Timing is not measurably affected
+- Capsule errors never block the decorated function (when `swallow_errors=True`)
+
+---
+
+## mount_capsules() (FastAPI Integration)
+
+<!-- VERIFIED: src/qp_capsule/integrations/fastapi.py:36-113 -->
+
+```python
+from qp_capsule.integrations.fastapi import mount_capsules
+
+mount_capsules(app, capsules, prefix="/api/v1/capsules")
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `app` | `FastAPI` | *(required)* | FastAPI application |
+| `capsules` | `Capsules` | *(required)* | Initialized `Capsules` instance |
+| `prefix` | `str` | `"/api/v1/capsules"` | URL prefix |
+
+**Endpoints added:**
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `{prefix}/` | List capsules (query: `limit`, `offset`, `type`, `tenant_id`) |
+| GET | `{prefix}/verify` | Verify chain integrity (query: `tenant_id`) |
+| GET | `{prefix}/{capsule_id}` | Get capsule by ID (404 if missing) |
+
+FastAPI is not a hard dependency. Raises `CapsuleError` if not installed.
+
+**Security note:** These endpoints are read-only and do not add authentication. Protect them with your application's auth middleware in production.
+
+---
+
 ## Related Documentation
 
+- [High-Level API Guide](./high-level-api.md) — Full walkthrough with examples
 - [Getting Started](./getting-started.md) — Quick introduction with minimal code
 - [Architecture](./architecture.md) — How these components fit together
 - [Security Evaluation](./security.md) — Cryptographic guarantees

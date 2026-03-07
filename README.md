@@ -2,7 +2,9 @@
 
 # Capsule Protocol Specification (CPS)
 
-**Tamper-evident audit records for AI operations.**
+**Know what your AI did, why it did it, and who approved it — with cryptographic proof.**
+
+*Tamper-evident audit records for AI operations.*
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg)](https://www.python.org/)
@@ -141,6 +143,83 @@ result = await chain.verify()
 assert result.valid
 ```
 
+### What a Sealed Capsule Looks Like
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "type": "agent",
+  "trigger": {
+    "source": "deploy-bot",
+    "request": "Deploy service v2.4 to production"
+  },
+  "reasoning": {
+    "options_considered": ["Deploy v2.4", "Rollback to v2.3", "Do nothing"],
+    "selected_option": "Deploy v2.4",
+    "confidence": 0.92
+  },
+  "authority": { "type": "human_approved", "approver": "ops-lead" },
+  "execution": {
+    "tool_calls": [{ "tool": "kubectl_apply", "success": true, "duration_ms": 3200 }]
+  },
+  "outcome": { "status": "success", "summary": "Deployed v2.4 to prod-us-east" },
+  "hash": "4cb02d65...",
+  "signature": "a3f8b2c1...",
+  "previous_hash": "7d2e9f41...",
+  "sequence": 42
+}
+```
+
+Six sections. Hashed with SHA3-256. Signed with Ed25519. Chained to the previous record. Reasoning captured *before* execution.
+
+### High-Level API
+
+The fastest way to add audit trails to any Python application. One class, one decorator.
+
+```bash
+pip install qp-capsule[storage]
+```
+
+```python
+from qp_capsule import Capsules
+
+capsules = Capsules()  # SQLite, zero config
+
+@capsules.audit(type="agent")
+async def run_agent(task: str, *, site_id: str):
+    cap = capsules.current()
+    cap.reasoning.model = "gpt-4o"
+    cap.reasoning.confidence = 0.92
+
+    result = await llm.complete(task)
+    cap.outcome.summary = f"Generated {len(result.text)} chars"
+    return result
+
+# Every call is now audited with a sealed Capsule.
+# If capsule creation fails, your function still works normally.
+await run_agent("Write a summary", site_id="tenant-123")
+```
+
+**PostgreSQL:**
+
+```python
+capsules = Capsules("postgresql://user:pass@localhost/mydb")
+```
+
+**FastAPI integration** — three read-only endpoints for inspecting the audit chain:
+
+```python
+from qp_capsule.integrations.fastapi import mount_capsules
+
+app = FastAPI()
+mount_capsules(app, capsules, prefix="/api/v1/capsules")
+# GET /api/v1/capsules/         — List (paginated, filterable)
+# GET /api/v1/capsules/{id}     — Get by ID
+# GET /api/v1/capsules/verify   — Verify chain integrity
+```
+
+See [High-Level API docs](./docs/high-level-api.md) for the full guide.
+
 ---
 
 ## Install
@@ -207,6 +286,7 @@ Capsule ships with SQLite and PostgreSQL storage. To build your own backend, imp
 
 | Document | Audience |
 |---|---|
+| [High-Level API](./docs/high-level-api.md) | Developers |
 | [Getting Started](./docs/getting-started.md) | Developers |
 | [Architecture](./docs/architecture.md) | Developers, Auditors |
 | [API Reference](./docs/api.md) | Developers |

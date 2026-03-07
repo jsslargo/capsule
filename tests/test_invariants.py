@@ -234,7 +234,7 @@ class TestHashDeterminism:
 
         results = set()
         for _ in range(50):
-            canonical = json.dumps(d, sort_keys=True, separators=(",", ":"))
+            canonical = json.dumps(d, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
             results.add(canonical)
 
         assert len(results) == 1, (

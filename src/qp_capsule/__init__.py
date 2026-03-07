@@ -36,7 +36,7 @@ Cross-language SDKs: Python, TypeScript, Go, Rust
 Spec: https://github.com/quantumpipes/capsule
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "Quantum Pipes Technologies, LLC"
 __license__ = "Apache-2.0"
 
@@ -72,6 +72,8 @@ with contextlib.suppress(ImportError):
 with contextlib.suppress(ImportError):
     from qp_capsule.storage_pg import CapsuleStoragePG, PostgresCapsuleStorage
 
+from qp_capsule.audit import Capsules
+
 __all__ = [
     # Version
     "__version__",
@@ -103,4 +105,6 @@ __all__ = [
     "SealError",
     "ChainError",
     "StorageError",
+    # High-Level API
+    "Capsules",
 ]

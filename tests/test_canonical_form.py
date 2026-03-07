@@ -29,7 +29,7 @@ FIXED_TIME = datetime(2026, 1, 15, 12, 0, 0, tzinfo=UTC)
 
 
 def _canonicalize(d: dict) -> str:
-    return json.dumps(d, sort_keys=True, separators=(",", ":"))
+    return json.dumps(d, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def _make_capsule(**kwargs) -> Capsule:

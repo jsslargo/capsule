@@ -200,7 +200,9 @@ Strings follow RFC 8259 (JSON) escaping rules. Characters that MUST be escaped:
 Characters that MUST NOT be escaped:
 - `/` (solidus) — serialize as literal `/`, not `\/`
 - Printable ASCII (U+0020 through U+007E) — serialize as literal characters
-- Non-ASCII Unicode (U+0080 and above) — serialize as literal UTF-8 characters
+- Non-ASCII Unicode (U+0080 and above) — serialize as literal UTF-8 characters, NOT as `\uXXXX` escapes
+
+This matches the default behavior of Go (`json.Marshal`), Rust (`serde_json`), and TypeScript (`JSON.stringify`). In Python, use `json.dumps(..., ensure_ascii=False)`.
 
 ### 2.7 Null, Boolean, and Empty Collections
 

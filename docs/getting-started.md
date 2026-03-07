@@ -170,8 +170,82 @@ Reasoning is captured **before** execution. This provides contemporaneous eviden
 
 ---
 
+## Tamper Detection
+
+This is what makes Capsule different from logging. Seal a Capsule, tamper with it, and watch verification catch it:
+
+<!-- VERIFIED: src/qp_capsule/seal.py:338-385 -->
+
+```python
+from qp_capsule import Capsule, Seal, CapsuleType, TriggerSection
+
+capsule = Capsule(
+    type=CapsuleType.AGENT,
+    trigger=TriggerSection(source="test", request="Original request"),
+)
+
+seal = Seal()
+seal.seal(capsule)
+
+# Verification passes
+assert seal.verify(capsule)
+print("Before tampering: VALID")
+
+# Now tamper with the content
+capsule.trigger.request = "Altered request"
+
+# Verification FAILS — the hash no longer matches the content
+assert not seal.verify(capsule)
+print("After tampering:  INVALID — tamper detected")
+```
+
+**Expected output:**
+
+```
+Before tampering: VALID
+After tampering:  INVALID — tamper detected
+```
+
+The hash was computed from the original content. When the content changed, the hash no longer matched. No log rotation, no admin privilege, no database access can make a tampered Capsule pass verification.
+
+---
+
+## High-Level API (v1.1.0+)
+
+For most integrations, the high-level API is the fastest path. One class, one decorator:
+
+```bash
+pip install qp-capsule[storage]
+```
+
+<!-- VERIFIED: src/qp_capsule/audit.py:130-216 -->
+
+```python
+from qp_capsule import Capsules
+
+capsules = Capsules()
+
+@capsules.audit(type="agent")
+async def run_agent(task: str):
+    cap = capsules.current()
+    cap.reasoning.model = "gpt-4o"
+    cap.reasoning.confidence = 0.92
+    result = await llm.complete(task)
+    cap.outcome.summary = f"Generated {len(result.text)} chars"
+    return result
+
+await run_agent("Write a summary of Q1 results")
+```
+
+The decorator handles Capsule creation, sealing, chaining, and storage automatically. If capsule creation fails, your function still works normally.
+
+See [High-Level API](./high-level-api.md) for the full guide.
+
+---
+
 ## What's Next
 
+- [High-Level API](./high-level-api.md) — `Capsules`, `@audit`, `current()`, FastAPI integration
 - [Architecture](./architecture.md) — Deep dive on the 6-section model, cryptographic sealing, and hash chain
 - [API Reference](./api.md) — Every class, method, and parameter
 - [Security Evaluation](./security.md) — Cryptographic guarantees for security teams

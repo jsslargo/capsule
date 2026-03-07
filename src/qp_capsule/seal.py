@@ -260,8 +260,10 @@ class Seal:
         try:
             signing_key, _ = self._ensure_keys()
 
-            # 1. Serialize to canonical JSON (sorted keys for consistency)
-            content = json.dumps(capsule.to_dict(), sort_keys=True, separators=(",", ":"))
+            # 1. Serialize to canonical JSON (sorted keys, literal UTF-8)
+            content = json.dumps(
+                capsule.to_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            )
 
             # 2. Hash with SHA3-256
             hash_value = hashlib.sha3_256(content.encode("utf-8")).hexdigest()
@@ -352,7 +354,9 @@ class Seal:
 
         try:
             # 1. Recompute hash from content
-            content = json.dumps(capsule.to_dict(), sort_keys=True, separators=(",", ":"))
+            content = json.dumps(
+                capsule.to_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            )
             computed_hash = hashlib.sha3_256(content.encode("utf-8")).hexdigest()
 
             # 2. Check hash matches (detect content tampering)
@@ -421,7 +425,9 @@ class Seal:
 
         try:
             # Recompute hash
-            content = json.dumps(capsule.to_dict(), sort_keys=True, separators=(",", ":"))
+            content = json.dumps(
+                capsule.to_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            )
             computed_hash = hashlib.sha3_256(content.encode("utf-8")).hexdigest()
 
             if computed_hash != capsule.hash:
@@ -452,5 +458,5 @@ def compute_hash(data: dict[str, Any]) -> str:
     Returns:
         Hex-encoded hash
     """
-    content = json.dumps(data, sort_keys=True, separators=(",", ":"))
+    content = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha3_256(content.encode("utf-8")).hexdigest()

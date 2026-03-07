@@ -35,8 +35,8 @@ def _load_fixtures() -> list[dict]:
 
 
 def _canonicalize(capsule_dict: dict) -> str:
-    """Canonical JSON per CPS spec Section 2: sorted keys, zero whitespace."""
-    return json.dumps(capsule_dict, sort_keys=True, separators=(",", ":"))
+    """Canonical JSON per CPS spec Section 2: sorted keys, literal UTF-8, zero whitespace."""
+    return json.dumps(capsule_dict, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def _sha3_256(canonical_json: str) -> str:

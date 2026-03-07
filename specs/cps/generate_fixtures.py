@@ -29,7 +29,7 @@ from qp_capsule import (
 
 
 def canonical_json(d: dict) -> str:
-    return json.dumps(d, sort_keys=True, separators=(",", ":"))
+    return json.dumps(d, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def sha3_256_hex(s: str) -> str:
