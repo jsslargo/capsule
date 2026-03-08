@@ -327,7 +327,9 @@ class TestChainCryptographicVerification:
             seal.seal(capsule)
             await storage.store(capsule)
 
-        await _tamper_stored_capsule(storage, sequence=2, field="trigger.request", value="tampered_middle")
+        await _tamper_stored_capsule(
+            storage, sequence=2, field="trigger.request", value="tampered_middle"
+        )
 
         result = await chain.verify(verify_content=True)
 
