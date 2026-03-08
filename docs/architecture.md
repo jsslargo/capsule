@@ -369,7 +369,7 @@ Capsules can form parent-child hierarchies: `WORKFLOW` (parent) -> `AGENT` (chil
 
 - [Why Capsules](./why-capsules.md) — The case for cryptographic AI memory
 - [Security Evaluation](./security.md) — Cryptographic guarantees for CISOs
-- [Compliance Mapping](./compliance.md) — Regulatory framework alignment
+- [Compliance Mapping](./compliance/) — Regulatory framework alignment
 - [CPS Specification](../spec/) — Protocol rules for SDK authors
 - [Python Reference](../reference/python/) — Python API reference and quickstart
 

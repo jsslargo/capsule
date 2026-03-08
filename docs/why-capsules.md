@@ -78,5 +78,5 @@ Every Capsule is addressable by its SHA3-256 hash via the `capsule://` URI schem
 
 - [Architecture](./architecture.md) — How the protocol works
 - [Security Evaluation](./security.md) — Cryptographic guarantees
-- [Compliance Mapping](./compliance.md) — Regulatory framework alignment
+- [Compliance Mapping](./compliance/) — Regulatory framework alignment
 - [CPS Specification](../spec/) — The full protocol specification

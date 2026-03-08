@@ -8,7 +8,7 @@ Every AI action produces a Capsule — a tamper-evident, content-addressable rec
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CPS](https://img.shields.io/badge/CPS-v1.0-orange.svg)](./spec/)
-[![Conformance](https://img.shields.io/badge/Conformance-16_vectors-brightgreen.svg)](./conformance/)
+[![Conformance](https://img.shields.io/badge/Conformance-16_vectors-ff69b4.svg)](./conformance/)
 [![FIPS](https://img.shields.io/badge/Crypto-FIPS_202%20·%20186--5%20·%20204-purple.svg)](#cryptographic-seal)
 [![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](./reference/python/)
 
@@ -229,13 +229,35 @@ See the [TypeScript reference documentation](./reference/typescript/) for the fu
 
 ---
 
+## Compliance
+
+Capsule maps to 11 regulatory frameworks at the protocol level. Each mapping documents which controls the protocol satisfies and which require complementary application-level controls.
+
+| Framework | Controls | Focus |
+|---|---|---|
+| [NIST SP 800-53](./docs/compliance/nist-sp-800-53.md) | AU-2 through AU-12, SC-13, SC-28, SI-7 | Audit, integrity, crypto |
+| [NIST AI RMF](./docs/compliance/nist-ai-rmf.md) | GOVERN, MAP, MEASURE, MANAGE | AI risk management |
+| [EU AI Act](./docs/compliance/eu-ai-act.md) | Articles 12, 13, 14 | Record-keeping, transparency, oversight |
+| [SOC 2](./docs/compliance/soc2.md) | CC6.1, CC7.2, CC7.3, CC7.4, CC8.1 | Trust Services Criteria |
+| [ISO 27001](./docs/compliance/iso27001.md) | A.8.15 through A.8.25 | Annex A controls |
+| [HIPAA](./docs/compliance/hipaa.md) | §164.308, §164.312 | Security Rule safeguards |
+| [GDPR](./docs/compliance/gdpr.md) | Articles 5, 25, 30, 32, 35 | Data protection |
+| [PCI DSS](./docs/compliance/pci-dss.md) | Req 10, 11.5, 11.6 | Logging, change detection |
+| [FedRAMP](./docs/compliance/fedramp.md) | AU-9(3), AU-10, SI-7, CM-3 | Federal cloud |
+| [FINRA](./docs/compliance/finra.md) | SEC 17a-4, REC-2, Rule 3110 | Financial recordkeeping |
+| [CMMC](./docs/compliance/cmmc.md) | AU.L2-3.3.x, SC.L2-3.13.x | DoD CUI protection |
+
+See the [compliance overview](./docs/compliance/) for FIPS algorithm details and scope.
+
+---
+
 ## Documentation
 
 | Document | Audience |
 |---|---|
 | [Architecture](./docs/architecture.md) | Developers, Auditors |
 | [Security Evaluation](./docs/security.md) | CISOs, Security Teams |
-| [Compliance Mapping](./docs/compliance.md) | Regulators, GRC |
+| [Compliance Mapping](./docs/compliance/) | Regulators, GRC |
 | [Why Capsules](./docs/why-capsules.md) | Decision-Makers, Architects |
 | [Implementor's Guide](./docs/implementors-guide.md) | SDK Authors |
 

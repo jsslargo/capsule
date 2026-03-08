@@ -443,7 +443,6 @@ class TestProtocolDocs:
         "README.md",
         "architecture.md",
         "security.md",
-        "compliance.md",
         "why-capsules.md",
         "implementors-guide.md",
     ]
@@ -451,6 +450,32 @@ class TestProtocolDocs:
     @pytest.mark.parametrize("filename", REQUIRED_DOCS)
     def test_doc_exists(self, filename: str):
         assert (REPO_ROOT / "docs" / filename).exists(), f"docs/{filename} missing"
+
+    def test_compliance_directory_exists(self):
+        """Compliance is a directory with per-framework mappings."""
+        compliance_dir = REPO_ROOT / "docs" / "compliance"
+        assert compliance_dir.is_dir(), "docs/compliance/ directory missing"
+        assert (compliance_dir / "README.md").exists(), "docs/compliance/README.md missing"
+
+    REQUIRED_COMPLIANCE_FRAMEWORKS = [
+        "nist-sp-800-53.md",
+        "nist-ai-rmf.md",
+        "eu-ai-act.md",
+        "soc2.md",
+        "iso27001.md",
+        "hipaa.md",
+        "gdpr.md",
+        "pci-dss.md",
+        "fedramp.md",
+        "finra.md",
+        "cmmc.md",
+    ]
+
+    @pytest.mark.parametrize("filename", REQUIRED_COMPLIANCE_FRAMEWORKS)
+    def test_compliance_framework_exists(self, filename: str):
+        assert (REPO_ROOT / "docs" / "compliance" / filename).exists(), (
+            f"docs/compliance/{filename} missing"
+        )
 
     def test_python_specific_docs_not_in_protocol_docs(self):
         """API reference and getting-started are Python-specific, not protocol-level."""

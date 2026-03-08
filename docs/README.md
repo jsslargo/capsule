@@ -9,7 +9,7 @@ These documents explain the Capsule Protocol — why it exists, how it works, an
 | [Why Capsules](./why-capsules.md) | Decision-Makers, Architects | The case for cryptographic AI memory |
 | [Architecture](./architecture.md) | Developers, Auditors | 6-section model, sealing, hash chain |
 | [Security Evaluation](./security.md) | CISOs, Security Teams | Cryptographic guarantees and key management |
-| [Compliance Mapping](./compliance.md) | Regulators, GRC | NIST, EU AI Act, SOC 2, ISO 27001 |
+| [Compliance Mapping](./compliance/) | Regulators, GRC | NIST, EU AI Act, SOC 2, ISO 27001, HIPAA, GDPR |
 | [Implementor's Guide](./implementors-guide.md) | SDK Authors | How to build a conformant implementation |
 
 ## Normative Specification
