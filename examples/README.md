@@ -44,6 +44,6 @@ print(json.dumps(capsule.to_dict(), indent=2))
 
 ## Related
 
-- [CPS Specification](../specs/cps/) — Protocol rules and golden test vectors
-- [Getting Started](../docs/getting-started.md) — Create your first Capsule
-- [API Reference](../docs/api.md) — Complete class and method reference
+- [CPS Specification](../spec/) — Protocol rules and golden test vectors
+- [Conformance Suite](../conformance/) — 15 golden test vectors
+- [Python Reference](../reference/python/) — Python quickstart and API reference

@@ -7,6 +7,35 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Protocol-first repository restructure** — the repo now presents as an open protocol specification, not a Python package:
+  - Protocol specification at `spec/` (was `specs/cps/`)
+  - Conformance suite at `conformance/` (was `specs/cps/fixtures.json`)
+  - Python reference implementation at `reference/python/` (was root-level `src/`, `tests/`, `pyproject.toml`)
+  - Protocol documentation at `docs/` (language-agnostic)
+  - Python-specific docs at `reference/python/docs/`
+  - No `pyproject.toml` at repo root — the repo is a protocol, not a package
+
+### Added
+
+- **`capsule://` URI scheme** — content-addressable references to Capsule records via their SHA3-256 hash. Spec at `spec/uri-scheme.md`. Supports hash references (`capsule://sha3_<hash>`), chain references (`capsule://chain/42`), ID references, and fragment syntax into the 6 sections.
+- **TypeScript reference implementation** — full CPS-conformant implementation at `reference/typescript/`: Capsule model with factories, canonical JSON serializer (CPS Section 2 with float-path handling), SHA3-256 hashing, Ed25519 seal/verify, and chain verification. Passes all 15 golden fixtures. 101 tests, 100% coverage (v8). Uses `@noble/hashes` ^2.0.1, `@noble/ed25519` ^3.0.0, vitest ^4.0.0, TypeScript ^5.9.0. Node.js >= 20.19.0.
+- **Implementor's Guide** (`docs/implementors-guide.md`) — step-by-step instructions for building a conformant CPS implementation in any language, with language-specific pitfalls for TypeScript, Go, and Rust.
+- **Why Capsules** (`docs/why-capsules.md`) — the case for cryptographic AI memory, aimed at decision-makers and architects.
+- **URI scheme security considerations** — `spec/uri-scheme.md` now includes: URI injection validation, resolution trust model, denial-of-service mitigations, fragment path traversal safety, no ambient authority principle.
+- **Protocol structure tests** (`reference/python/tests/test_protocol_structure.py`) — guards the protocol-first layout, spec completeness, conformance suite integrity, TypeScript type alignment with spec, markdown link resolution, CI configuration, and root-level file requirements.
+- **Dependabot for TypeScript** — npm dependency updates for `reference/typescript/`.
+
+### Updated
+
+- **Python dependencies** — pytest >=9.0.0, pytest-asyncio >=1.0.0, ruff >=0.15.0, mypy >=1.19.0, sqlalchemy >=2.0.48, asyncpg >=0.31.0, liboqs-python >=0.14.1.
+- **CI workflows** — renamed to `python-ci.yaml` / `python-release.yaml`, trigger on `reference/python/**`, `conformance/**`, and `spec/**` paths with `working-directory: reference/python`.
+
+---
+
 ## [1.1.0] - 2026-03-07
 
 High-level API for zero-boilerplate integration. One class, one decorator, one context variable.
@@ -48,7 +77,7 @@ Initial public release of the Capsule Protocol Specification (CPS) v1.0 referenc
 - **Cross-language interoperability**: canonical JSON serialization rules and 15 golden test vectors covering Unicode, fractional timestamps, all CapsuleTypes, chain sequences, deep nesting, failure paths
 - **Documentation**: getting-started, architecture, API reference, security evaluation, compliance mapping, CPS specification summary
 - **350 automated tests** across 14 test files with **100% code coverage** enforced in CI
-- **CPS v1.0 specification** shipped with the repo at `specs/cps/`
+- **CPS v1.0 specification** shipped with the repo at `spec/`
 - **Apache 2.0 license** with additional patent grant
 
 ### Security

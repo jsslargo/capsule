@@ -34,7 +34,7 @@ Capsule is a cryptographic audit record for AI operations. Every AI action produ
 
 ## 2. Cryptographic Architecture
 
-<!-- VERIFIED: src/qp_capsule/seal.py:7-30, 243-300 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/seal.py:7-30, 243-300 -->
 
 ### Algorithm Selection
 
@@ -74,7 +74,7 @@ Ed25519 is always required. ML-DSA-65 is additive, never a replacement. If one a
 
 ## 3. Key Management
 
-<!-- VERIFIED: src/qp_capsule/seal.py:50-55, 122-159, 161-222 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/seal.py:50-55, 122-159, 161-222 -->
 
 ### Storage Locations
 
@@ -212,7 +212,7 @@ Use this checklist when evaluating Capsule for your organization:
 
 - [Architecture](./architecture.md) — Technical deep dive on the 6-section model and cryptographic sealing
 - [Compliance Mapping](./compliance.md) — NIST SP 800-53, EU AI Act, SOC 2, ISO 27001
-- [CPS Specification](./specification.md) — Protocol rules and golden test vectors
+- [CPS Specification](../spec/) — Protocol rules and golden test vectors
 - [SECURITY.md](../SECURITY.md) — Vulnerability reporting
 
 ---

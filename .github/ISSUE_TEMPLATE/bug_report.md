@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in Capsule or the CPS reference implementation
+about: Report a bug in the Capsule Protocol or a reference implementation
 title: "[Bug] "
 labels: bug
 assignees: ''
@@ -10,14 +10,22 @@ assignees: ''
 
 A clear description of what the bug is.
 
+## Which Component?
+
+- [ ] Protocol specification (`spec/`)
+- [ ] Conformance suite (`conformance/`)
+- [ ] Python reference implementation (`reference/python/`)
+- [ ] TypeScript reference implementation (`reference/typescript/`)
+- [ ] Documentation (`docs/`)
+
 ## To Reproduce
 
 Steps to reproduce the behavior:
 
-1. Install with `pip install qp-capsule...`
+1. Install with `pip install qp-capsule` or `npm install @quantumpipes/capsule`
 2. Run this code:
 
-```python
+```
 # Minimal reproducer
 ```
 
@@ -34,8 +42,8 @@ What actually happened. Include the full traceback if applicable.
 ## Environment
 
 - **OS**: (e.g., macOS 15, Ubuntu 24.04)
-- **Python**: (e.g., 3.12.1)
-- **Capsule version**: (e.g., 1.0.0)
+- **Language**: Python 3.12 / Node.js 22 / etc.
+- **Capsule version**: (e.g., 1.1.0 / 0.0.1)
 - **Install extras**: (e.g., `[storage]`, `[pq]`)
 
 ## Additional Context

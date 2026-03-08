@@ -13,10 +13,18 @@ What does this PR do? Link to any related issues.
 
 ## Checklist
 
-- [ ] Tests pass (`pytest tests/`)
-- [ ] Linter passes (`ruff check src/ tests/`)
-- [ ] Type checker passes (`mypy src/qp_capsule/`)
-- [ ] Golden fixtures still pass (`pytest tests/test_golden_fixtures.py`)
+### Python reference (`reference/python/`)
+- [ ] Tests pass: `cd reference/python && pytest tests/`
+- [ ] Linter passes: `cd reference/python && ruff check src/ tests/`
+- [ ] Type checker passes: `cd reference/python && mypy src/qp_capsule/`
+- [ ] Golden fixtures pass: `cd reference/python && pytest tests/test_golden_fixtures.py`
+
+### TypeScript reference (`reference/typescript/`)
+- [ ] Tests pass: `cd reference/typescript && npm test`
+- [ ] Type check passes: `cd reference/typescript && npx tsc --noEmit`
+- [ ] Conformance passes: `cd reference/typescript && npm run conformance`
+
+### General
 - [ ] Documentation updated (if applicable)
 - [ ] CHANGELOG.md updated (if user-facing change)
 

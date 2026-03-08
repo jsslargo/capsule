@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1772935097547" clover="3.2.0">
+  <project timestamp="1772935097547" name="All files">
+    <metrics statements="91" coveredstatements="91" conditionals="49" coveredconditionals="49" methods="24" coveredmethods="24" elements="164" coveredelements="164" complexity="0" loc="91" ncloc="91" packages="1" files="5" classes="5"/>
+    <file name="canonical.ts" path="/Users/bradleygauthier/sitecast/synova/repos/capsule/reference/typescript/src/canonical.ts">
+      <metrics statements="32" coveredstatements="32" conditionals="29" coveredconditionals="29" methods="7" coveredmethods="7"/>
+      <line num="13" count="4" type="stmt"/>
+      <line num="28" count="111" type="stmt"/>
+      <line num="32" count="4554" type="cond" truecount="4" falsecount="0"/>
+      <line num="33" count="962" type="stmt"/>
+      <line num="36" count="3592" type="cond" truecount="2" falsecount="0"/>
+      <line num="37" count="50" type="cond" truecount="2" falsecount="0"/>
+      <line num="40" count="3542" type="cond" truecount="2" falsecount="0"/>
+      <line num="41" count="418" type="cond" truecount="2" falsecount="0"/>
+      <line num="42" count="3" type="stmt"/>
+      <line num="44" count="415" type="stmt"/>
+      <line num="47" count="3124" type="cond" truecount="2" falsecount="0"/>
+      <line num="48" count="1590" type="stmt"/>
+      <line num="51" count="1534" type="cond" truecount="2" falsecount="0"/>
+      <line num="52" count="515" type="cond" truecount="2" falsecount="0"/>
+      <line num="53" count="515" type="stmt"/>
+      <line num="54" count="515" type="stmt"/>
+      <line num="57" count="1019" type="cond" truecount="2" falsecount="0"/>
+      <line num="58" count="1018" type="stmt"/>
+      <line num="59" count="1018" type="stmt"/>
+      <line num="60" count="1018" type="stmt"/>
+      <line num="61" count="4302" type="cond" truecount="2" falsecount="0"/>
+      <line num="62" count="4302" type="stmt"/>
+      <line num="64" count="1018" type="stmt"/>
+      <line num="67" count="1" type="stmt"/>
+      <line num="71" count="415" type="stmt"/>
+      <line num="75" count="415" type="cond" truecount="2" falsecount="0"/>
+      <line num="76" count="115" type="stmt"/>
+      <line num="78" count="300" type="stmt"/>
+      <line num="90" count="115" type="stmt"/>
+      <line num="91" count="115" type="cond" truecount="5" falsecount="0"/>
+      <line num="92" count="94" type="stmt"/>
+      <line num="94" count="21" type="stmt"/>
+    </file>
+    <file name="capsule.ts" path="/Users/bradleygauthier/sitecast/synova/repos/capsule/reference/typescript/src/capsule.ts">
+      <metrics statements="10" coveredstatements="10" conditionals="4" coveredconditionals="4" methods="9" coveredmethods="9"/>
+      <line num="158" count="32" type="stmt"/>
+      <line num="170" count="32" type="stmt"/>
+      <line num="179" count="32" type="stmt"/>
+      <line num="193" count="32" type="stmt"/>
+      <line num="204" count="32" type="stmt"/>
+      <line num="213" count="32" type="stmt"/>
+      <line num="230" count="31" type="cond" truecount="2" falsecount="0"/>
+      <line num="232" count="31" type="stmt"/>
+      <line num="259" count="28" type="stmt"/>
+      <line num="276" count="2" type="cond" truecount="2" falsecount="0"/>
+    </file>
+    <file name="chain.ts" path="/Users/bradleygauthier/sitecast/synova/repos/capsule/reference/typescript/src/chain.ts">
+      <metrics statements="13" coveredstatements="13" conditionals="10" coveredconditionals="10" methods="1" coveredmethods="1"/>
+      <line num="30" count="6" type="cond" truecount="2" falsecount="0"/>
+      <line num="31" count="1" type="stmt"/>
+      <line num="34" count="5" type="stmt"/>
+      <line num="35" count="12" type="stmt"/>
+      <line num="37" count="12" type="cond" truecount="2" falsecount="0"/>
+      <line num="38" count="1" type="stmt"/>
+      <line num="46" count="11" type="cond" truecount="2" falsecount="0"/>
+      <line num="47" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="48" count="1" type="stmt"/>
+      <line num="56" count="6" type="stmt"/>
+      <line num="57" count="6" type="cond" truecount="2" falsecount="0"/>
+      <line num="58" count="1" type="stmt"/>
+      <line num="68" count="2" type="stmt"/>
+    </file>
+    <file name="index.ts" path="/Users/bradleygauthier/sitecast/synova/repos/capsule/reference/typescript/src/index.ts">
+      <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+    </file>
+    <file name="seal.ts" path="/Users/bradleygauthier/sitecast/synova/repos/capsule/reference/typescript/src/seal.ts">
+      <metrics statements="36" coveredstatements="36" conditionals="6" coveredconditionals="6" methods="7" coveredmethods="7"/>
+      <line num="25" count="27" type="stmt"/>
+      <line num="26" count="27" type="stmt"/>
+      <line num="27" count="27" type="stmt"/>
+      <line num="35" count="30" type="stmt"/>
+      <line num="36" count="30" type="stmt"/>
+      <line num="37" count="30" type="stmt"/>
+      <line num="54" count="18" type="stmt"/>
+      <line num="55" count="18" type="stmt"/>
+      <line num="57" count="18" type="stmt"/>
+      <line num="58" count="18" type="stmt"/>
+      <line num="60" count="18" type="stmt"/>
+      <line num="62" count="18" type="stmt"/>
+      <line num="63" count="18" type="stmt"/>
+      <line num="64" count="18" type="stmt"/>
+      <line num="65" count="18" type="stmt"/>
+      <line num="66" count="18" type="stmt"/>
+      <line num="68" count="18" type="stmt"/>
+      <line num="85" count="6" type="cond" truecount="4" falsecount="0"/>
+      <line num="86" count="1" type="stmt"/>
+      <line num="89" count="5" type="stmt"/>
+      <line num="90" count="5" type="stmt"/>
+      <line num="91" count="5" type="stmt"/>
+      <line num="93" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="94" count="1" type="stmt"/>
+      <line num="97" count="4" type="stmt"/>
+      <line num="98" count="4" type="stmt"/>
+      <line num="100" count="4" type="stmt"/>
+      <line num="102" count="1" type="stmt"/>
+      <line num="115" count="16" type="stmt"/>
+      <line num="116" count="16" type="stmt"/>
+      <line num="124" count="3" type="stmt"/>
+      <line num="125" count="3" type="stmt"/>
+      <line num="133" count="4" type="stmt"/>
+      <line num="134" count="4" type="stmt"/>
+      <line num="135" count="193" type="stmt"/>
+      <line num="137" count="4" type="stmt"/>
+    </file>
+  </project>
+</coverage>

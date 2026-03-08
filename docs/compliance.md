@@ -188,7 +188,7 @@ Capsule sealed in any language can be verified in any other. The Capsule Protoco
 
 The Python reference implementation is available now. Cross-language SDKs (TypeScript, Go, Rust) are planned. All must produce byte-identical canonical JSON and matching SHA3-256 hashes for the golden test vectors.
 
-See [CPS Specification](./specification.md) for protocol details.
+See [CPS Specification](../spec/) for protocol details.
 
 ---
 
@@ -196,7 +196,7 @@ See [CPS Specification](./specification.md) for protocol details.
 
 - [Security Evaluation](./security.md) — Cryptographic architecture, key management, attack surface
 - [Architecture](./architecture.md) — 6-section model, sealing process, hash chain
-- [CPS Specification](./specification.md) — Protocol rules and golden test vectors
+- [CPS Specification](../spec/) — Protocol rules and golden test vectors
 
 ---
 

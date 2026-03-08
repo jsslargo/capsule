@@ -31,7 +31,7 @@ Every action an AI agent takes produces a Capsule. Every Capsule tells the full 
 
 ## The 6-Section Model
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:78-307 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:78-307 -->
 
 Every Capsule has six mandatory sections. Together they answer the complete audit question: what happened, why, who approved it, how, and what was the result.
 
@@ -55,7 +55,7 @@ Every Capsule has six mandatory sections. Together they answer the complete audi
 
 What initiated this action?
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:78-100 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:78-100 -->
 
 | Field | Type | Description |
 |---|---|---|
@@ -70,7 +70,7 @@ What initiated this action?
 
 What was the state of the system?
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:108-119 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:108-119 -->
 
 | Field | Type | Description |
 |---|---|---|
@@ -82,7 +82,7 @@ What was the state of the system?
 
 Why was this decision made?
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:174-218 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:174-218 -->
 
 This is the differentiating section. Reasoning is captured **before execution**, not reconstructed afterward. This provides contemporaneous evidence of deliberation with stronger legal and compliance weight than post-hoc explainability.
 
@@ -99,7 +99,7 @@ This is the differentiating section. Reasoning is captured **before execution**,
 
 Each `ReasoningOption` includes:
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:128-144 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:128-144 -->
 
 | Field | Type | Description |
 |---|---|---|
@@ -119,7 +119,7 @@ The `rejection_reason` field is what makes this more than logging. Every non-sel
 
 Who or what approved this action?
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:227-246 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:227-246 -->
 
 | Field | Type | Description |
 |---|---|---|
@@ -133,7 +133,7 @@ Who or what approved this action?
 
 What actually happened?
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:255-277 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:255-277 -->
 
 | Field | Type | Description |
 |---|---|---|
@@ -147,7 +147,7 @@ Each `ToolCall` includes: `tool`, `arguments`, `result`, `success`, `duration_ms
 
 What was the result?
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:286-307 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:286-307 -->
 
 | Field | Type | Description |
 |---|---|---|
@@ -162,7 +162,7 @@ What was the result?
 
 ## Cryptographic Sealing
 
-<!-- VERIFIED: src/qp_capsule/seal.py:243-300 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/seal.py:243-300 -->
 
 Every Capsule is cryptographically sealed using a two-tier architecture:
 
@@ -194,7 +194,7 @@ capsule.signed_at, capsule.signed_by ← filled
 
 ### Verification Process
 
-<!-- VERIFIED: src/qp_capsule/seal.py:338-385 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/seal.py:338-385 -->
 
 Verification re-derives the hash from content and checks it against the stored hash and signature:
 
@@ -207,7 +207,7 @@ If any step fails, `seal.verify()` returns `False`.
 
 ### Key Management
 
-<!-- VERIFIED: src/qp_capsule/seal.py:122-159, 161-222 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/seal.py:122-159, 161-222 -->
 
 | Key | Location | Permissions | Generated |
 |---|---|---|---|
@@ -223,7 +223,7 @@ Keys are generated using cryptographically secure random sources. File creation 
 
 ## Hash Chain
 
-<!-- VERIFIED: src/qp_capsule/chain.py:42-145 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/chain.py:42-145 -->
 
 The hash chain turns individual Capsules into an unbreakable audit trail. Each Capsule records the hash of the one before it.
 
@@ -264,7 +264,7 @@ When using PostgreSQL storage, each tenant can have an independent hash chain. P
 
 ## Storage Architecture
 
-<!-- VERIFIED: src/qp_capsule/protocol.py:28-90 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/protocol.py:28-90 -->
 
 ### CapsuleStorageProtocol
 
@@ -284,7 +284,7 @@ All storage backends implement `CapsuleStorageProtocol`, a runtime-checkable `ty
 
 ### Built-in Backends
 
-<!-- VERIFIED: src/qp_capsule/storage.py:73-84, src/qp_capsule/storage_pg.py:67-79 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/storage.py:73-84, src/qp_capsule/storage_pg.py:67-79 -->
 
 | Backend | Install | Table | Multi-Tenant | Use Case |
 |---|---|---|---|---|
@@ -348,7 +348,7 @@ capsule = await chain.seal_and_store(capsule, seal)
 
 ## Capsule Types
 
-<!-- VERIFIED: src/qp_capsule/capsule.py:44-69 -->
+<!-- VERIFIED: reference/python/src/qp_capsule/capsule.py:44-69 -->
 
 | Type | Value | Purpose |
 |---|---|---|
@@ -367,10 +367,11 @@ Capsules can form parent-child hierarchies: `WORKFLOW` (parent) -> `AGENT` (chil
 
 ## Related Documentation
 
-- [Getting Started](./getting-started.md) — Quickstart for developers
-- [API Reference](./api.md) — Every class and method
+- [Why Capsules](./why-capsules.md) — The case for cryptographic AI memory
 - [Security Evaluation](./security.md) — Cryptographic guarantees for CISOs
-- [CPS Specification](./specification.md) — Protocol rules for SDK authors
+- [Compliance Mapping](./compliance.md) — Regulatory framework alignment
+- [CPS Specification](../spec/) — Protocol rules for SDK authors
+- [Python Reference](../reference/python/) — Python API reference and quickstart
 
 ---
 

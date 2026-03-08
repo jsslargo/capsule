@@ -1,0 +1,44 @@
+{
+  "name": "@quantumpipes/capsule",
+  "version": "0.0.1",
+  "description": "Capsule Protocol Specification (CPS) — TypeScript reference implementation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quantumpipes/capsule.git",
+    "directory": "reference/typescript"
+  },
+  "keywords": [
+    "capsule",
+    "cps",
+    "audit-trail",
+    "cryptography",
+    "ed25519",
+    "sha3",
+    "ai",
+    "tamper-evident"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "conformance": "vitest run __tests__/conformance.test.ts",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.1",
+    "@noble/ed25519": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  }
+}

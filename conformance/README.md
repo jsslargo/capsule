@@ -1,0 +1,78 @@
+# Conformance Test Suite
+
+**15 golden test vectors for cross-language interoperability.**
+
+Any implementation of the Capsule Protocol Specification (CPS) must produce byte-identical output for these test vectors. If your implementation passes all 15 fixtures, it can seal and verify Capsules interchangeably with every other conformant implementation.
+
+---
+
+## How to Use
+
+Each entry in `fixtures.json` contains three fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `capsule_dict` | object | The Capsule content as a JSON object (output of `to_dict()`) |
+| `canonical_json` | string | The exact canonical JSON string your implementation must produce |
+| `sha3_256_hash` | string | The expected SHA3-256 hex digest of the canonical JSON |
+
+### Conformance check
+
+For every fixture:
+
+1. Feed `capsule_dict` into your canonicalization function
+2. Compare the output byte-for-byte against `canonical_json`
+3. Compute SHA3-256 of the canonical JSON bytes (UTF-8 encoded)
+4. Compare the hash against `sha3_256_hash`
+
+If all 15 pass, your implementation is conformant.
+
+---
+
+## Fixtures
+
+| Fixture | Tests |
+|---|---|
+| **minimal** | Defaults, float `0.0`, nulls |
+| **full** | All sections fully populated with options, tool calls, metrics |
+| **kill_switch** | Kill switch activation (type `kill`, status `blocked`) |
+| **tool_invocation** | Tool-type Capsule with tool call and error field |
+| **chat_interaction** | Chat-type with session tracking |
+| **workflow_hierarchy** | Workflow with `parent_id` hierarchy linking |
+| **unicode_strings** | Non-ASCII in trigger, context, reasoning (UTF-8 conformance) |
+| **fractional_timestamp** | Microsecond-precision datetime |
+| **empty_vs_null** | Empty string vs null distinction (critical for Go, Rust, JS) |
+| **confidence_one** | Confidence `1.0` serialized as `1.0`, not `1` |
+| **deep_nesting** | Deeply nested objects testing recursive key sorting |
+| **chain_genesis** | First Capsule in chain (sequence 0, previous_hash null) |
+| **chain_linked** | Second Capsule with previous_hash set |
+| **failure_with_error** | Failed tool call with error details |
+| **auth_escalated** | Auth-type with MFA escalation chain |
+
+---
+
+## Generating Fixtures
+
+The fixture generator is written in Python but produces language-agnostic JSON:
+
+```bash
+cd conformance/
+python generate_fixtures.py
+```
+
+This regenerates `fixtures.json` from the reference implementation. The generator uses the Python reference at `../reference/python/` as the source of truth.
+
+---
+
+## Adding New Fixtures
+
+New fixtures must be added through the [protocol change proposal](https://github.com/quantumpipes/capsule/issues/new?template=spec-change.md) process. Every new fixture must:
+
+1. Test a specific edge case in the canonical serialization rules
+2. Be deterministic (no random data)
+3. Include `capsule_dict`, `canonical_json`, and `sha3_256_hash`
+4. Be reviewed by at least one maintainer
+
+---
+
+*The conformance suite is the contract. Pass the fixtures, and you're compatible with every other implementation.*

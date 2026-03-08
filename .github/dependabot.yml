@@ -1,13 +1,24 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/reference/python"
     schedule:
       interval: "weekly"
     labels:
       - "dependencies"
+      - "python"
     commit-message:
-      prefix: "deps"
+      prefix: "deps(python)"
+
+  - package-ecosystem: "npm"
+    directory: "/reference/typescript"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "typescript"
+    commit-message:
+      prefix: "deps(typescript)"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -15,5 +26,6 @@ updates:
       interval: "weekly"
     labels:
       - "dependencies"
+      - "ci"
     commit-message:
       prefix: "ci"
