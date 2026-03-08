@@ -211,7 +211,7 @@ Use this checklist when evaluating Capsule for your organization:
 ## Related Documentation
 
 - [Architecture](./architecture.md) — Technical deep dive on the 6-section model and cryptographic sealing
-- [Compliance Mapping](./compliance.md) — NIST SP 800-53, EU AI Act, SOC 2, ISO 27001
+- [Compliance Mapping](./compliance/) — NIST SP 800-53, EU AI Act, SOC 2, ISO 27001, HIPAA, GDPR
 - [CPS Specification](../spec/) — Protocol rules and golden test vectors
 - [SECURITY.md](../SECURITY.md) — Vulnerability reporting
 
