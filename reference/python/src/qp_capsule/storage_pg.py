@@ -71,7 +71,7 @@ class CapsuleModelPG(PGBase):
 event.listen(
     CapsuleModelPG.__table__,
     "after_create",
-    DDL(
+    DDL(  # type: ignore[no-untyped-call]
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_capsule_global_sequence "
         "ON quantumpipes_capsules (sequence) WHERE tenant_id IS NULL"
     ).execute_if(dialect="postgresql"),
