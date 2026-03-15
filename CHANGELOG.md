@@ -11,6 +11,32 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.5.0] - 2026-03-15
+
+Hash chain concurrency protection. Prevents race conditions where concurrent writes could fork the chain.
+
+### Added
+
+- **Optimistic retry in `seal_and_store()`** -- if a concurrent writer claims the same sequence number, the UNIQUE constraint rejects the duplicate and the method retries with the updated chain head. Up to 3 retries before raising `ChainConflictError`. Seal fields (hash, signature, metadata) are properly reset between attempts.
+- **`ChainConflictError` exception** -- raised when `seal_and_store()` exhausts all retries due to sustained concurrent writes for the same tenant chain. Subclass of `ChainError`; includes tenant ID in the message.
+- **`UNIQUE` constraint on sequence (SQLite)** -- `CapsuleModel` now enforces `UNIQUE(sequence)`, preventing duplicate sequence numbers at the database level. Defense-in-depth: even if application logic fails, the database rejects duplicates.
+- **`UNIQUE` constraint on tenant + sequence (PostgreSQL)** -- `CapsuleModelPG` now enforces `UNIQUE(tenant_id, sequence)`, scoped per tenant. Two tenants can independently have sequence 0, but the same tenant cannot have two capsules at the same sequence.
+- **Global chain protection (PostgreSQL)** -- a DDL event creates `CREATE UNIQUE INDEX ... WHERE tenant_id IS NULL` exclusively on PostgreSQL, preventing duplicate sequences in the global chain (tenant_id=NULL). Fires via `execute_if(dialect="postgresql")`; does not affect SQLite.
+- **`_is_integrity_error()` helper** -- detects `IntegrityError` and `UniqueViolationError` exceptions even when wrapped in `StorageError.__cause__` chains. Supports SQLAlchemy, asyncpg, and aiosqlite error types.
+- **36 new concurrency tests** (`test_chain_concurrency.py`) -- exception hierarchy (3), integrity error detection (6), retry behavior with mocks (7), UNIQUE constraint enforcement (2), end-to-end integration (6), model constraint verification (3), retry invariants including capsule identity preservation and warning emission (4), exception hierarchy completeness (3), CLI `_get_version()` (2).
+
+### Security
+
+- **TOCTOU race condition fixed** -- the `add()` → `seal()` → `store()` sequence previously had a time-of-check-time-of-use vulnerability where two concurrent writers could both read the same chain head and both store capsules with the same sequence number, silently forking the hash chain. The UNIQUE constraint converts this silent corruption into a detectable conflict, and the retry loop resolves it automatically.
+- **Defense in depth** -- the fix operates at two layers: database constraints (cannot be bypassed by application bugs) and application-level retry (handles the race transparently). Non-integrity errors (disk failures, network issues) propagate immediately without retry.
+
+### Migration
+
+- **New installations**: constraints are created automatically by `create_all()`.
+- **Existing databases**: run `ALTER TABLE capsules ADD CONSTRAINT uq_capsule_sequence UNIQUE (sequence)` (SQLite) or `ALTER TABLE quantumpipes_capsules ADD CONSTRAINT uq_capsule_tenant_sequence UNIQUE (tenant_id, sequence)` (PostgreSQL). If the table already contains duplicate sequences from a prior race condition, resolve duplicates before adding the constraint.
+
+---
+
 ## [1.4.0] - 2026-03-15
 
 Ecosystem expansion: Go verifier, LiteLLM integration, and negative conformance vectors.

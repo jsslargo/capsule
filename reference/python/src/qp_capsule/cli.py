@@ -41,6 +41,11 @@ from qp_capsule.seal import Seal, compute_hash
 _NO_COLOR = False
 
 
+def _get_version() -> str:
+    from qp_capsule import __version__
+    return __version__
+
+
 # ---------------------------------------------------------------------------
 # ANSI helpers (stdlib only -- no rich, no click)
 # ---------------------------------------------------------------------------
@@ -563,7 +568,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--version", action="version",
-        version=f"capsule {__import__('qp_capsule').__version__}",
+        version=f"capsule {_get_version()}",
     )
     sub = parser.add_subparsers(dest="command")
 

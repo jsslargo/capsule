@@ -27,7 +27,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Integer, String, Text, desc, select
+from sqlalchemy import DDL, Integer, String, Text, UniqueConstraint, desc, event, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -49,6 +49,9 @@ class CapsuleModelPG(PGBase):
     """
 
     __tablename__ = "quantumpipes_capsules"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "sequence", name="uq_capsule_tenant_sequence"),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     type: Mapped[str] = mapped_column(String(20))
@@ -63,6 +66,16 @@ class CapsuleModelPG(PGBase):
     session_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     domain: Mapped[str] = mapped_column(String(50), default="agents", index=True)
     tenant_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+
+
+event.listen(
+    CapsuleModelPG.__table__,
+    "after_create",
+    DDL(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_capsule_global_sequence "
+        "ON quantumpipes_capsules (sequence) WHERE tenant_id IS NULL"
+    ).execute_if(dialect="postgresql"),
+)
 
 
 class PostgresCapsuleStorage:

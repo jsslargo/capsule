@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Integer, String, Text, desc, func, select
+from sqlalchemy import Integer, String, Text, UniqueConstraint, desc, func, select
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -53,6 +53,9 @@ class CapsuleModel(Base):
     """
 
     __tablename__ = "capsules"
+    __table_args__ = (
+        UniqueConstraint("sequence", name="uq_capsule_sequence"),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     type: Mapped[str] = mapped_column(String(20))

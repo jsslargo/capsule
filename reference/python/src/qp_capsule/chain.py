@@ -16,19 +16,30 @@ Properties:
     - Integrity verification: Anyone can verify the chain
 
 The chain is the memory of the system made immutable.
+
+Concurrency:
+    seal_and_store() uses optimistic retry — if a concurrent writer claims
+    the same sequence number, the UNIQUE constraint rejects the duplicate
+    and the method retries with the updated chain head.
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from qp_capsule.exceptions import ChainConflictError
 from qp_capsule.seal import compute_hash
 
 if TYPE_CHECKING:
     from qp_capsule.capsule import Capsule
     from qp_capsule.protocol import CapsuleStorageProtocol
     from qp_capsule.seal import Seal
+
+_log = logging.getLogger(__name__)
+
+_MAX_CHAIN_RETRIES = 3
 
 
 @dataclass
@@ -238,10 +249,57 @@ class CapsuleChain:
         seal: Seal | None = None,
         tenant_id: str | None = None,
     ) -> Capsule:
-        """Chain, seal, and store a capsule in one call."""
+        """
+        Chain, seal, and store a Capsule in one call.
+
+        Uses optimistic retry to handle concurrent writes: if another writer
+        claims the same sequence number, the UNIQUE constraint on the storage
+        backend rejects the duplicate and this method retries with the updated
+        chain head. Retries up to ``_MAX_CHAIN_RETRIES`` times.
+
+        Raises:
+            ChainConflictError: If all retries are exhausted.
+        """
         from qp_capsule.seal import Seal as SealCls
 
-        capsule = await self.add(capsule, tenant_id=tenant_id)
         seal_instance = seal or SealCls()
-        capsule = seal_instance.seal(capsule)
-        return await self.storage.store(capsule, tenant_id=tenant_id)
+
+        for attempt in range(_MAX_CHAIN_RETRIES):
+            capsule = await self.add(capsule, tenant_id=tenant_id)
+            capsule = seal_instance.seal(capsule)
+
+            try:
+                return await self.storage.store(capsule, tenant_id=tenant_id)
+            except Exception as exc:
+                if not _is_integrity_error(exc):
+                    raise
+
+                _log.warning(
+                    "Chain sequence conflict (attempt %d/%d, seq=%d, tenant=%s), retrying",
+                    attempt + 1,
+                    _MAX_CHAIN_RETRIES,
+                    capsule.sequence,
+                    tenant_id,
+                )
+                capsule.hash = ""
+                capsule.signature = ""
+                capsule.signature_pq = ""
+                capsule.signed_at = None
+                capsule.signed_by = ""
+
+        raise ChainConflictError(
+            f"Failed to add Capsule to chain after {_MAX_CHAIN_RETRIES} retries "
+            f"(concurrent writes for tenant={tenant_id!r})"
+        )
+
+
+def _is_integrity_error(exc: BaseException) -> bool:
+    """Check if an exception is a database integrity/unique-constraint violation."""
+    from qp_capsule.exceptions import StorageError
+
+    name = type(exc).__name__
+    if name in ("IntegrityError", "UniqueViolationError"):
+        return True
+    if isinstance(exc, StorageError) and exc.__cause__ is not None:
+        return _is_integrity_error(exc.__cause__)
+    return False

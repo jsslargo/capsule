@@ -21,6 +21,10 @@ class ChainError(CapsuleError):
     """Hash chain integrity error."""
 
 
+class ChainConflictError(ChainError):
+    """Concurrent write detected — sequence conflict after max retries."""
+
+
 class StorageError(CapsuleError):
     """Capsule storage operation failed."""
 

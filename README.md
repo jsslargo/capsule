@@ -96,6 +96,34 @@ Capsule #0          Capsule #1          Capsule #2
 
 No consensus mechanism. No distributed ledger. SHA3-256 hashes linking one record to the next.
 
+### Concurrency Protection (v1.5.0+)
+
+Concurrent writes to the same chain are handled automatically by `seal_and_store()`:
+
+1. **UNIQUE constraint** — the database rejects duplicate sequence numbers (`UNIQUE(sequence)` on SQLite, `UNIQUE(tenant_id, sequence)` on PostgreSQL)
+2. **Optimistic retry** — on conflict, `seal_and_store()` re-reads the chain head, recomputes the sequence, re-seals, and retries (up to 3 attempts)
+3. **`ChainConflictError`** — raised if all retries are exhausted under extreme contention
+
+```python
+from qp_capsule import Capsule, CapsuleChain, CapsuleStorage, Seal
+from qp_capsule.exceptions import ChainConflictError
+
+storage = CapsuleStorage()
+chain = CapsuleChain(storage)
+seal = Seal()
+
+# Safe for concurrent use — retries automatically on sequence conflict
+capsule = await chain.seal_and_store(
+    Capsule(trigger=TriggerSection(source="agent", request="deploy")),
+    seal=seal,
+    tenant_id="org-123",
+)
+
+# Multi-tenant: each tenant has an independent chain
+await chain.seal_and_store(capsule_a, seal=seal, tenant_id="tenant-a")
+await chain.seal_and_store(capsule_b, seal=seal, tenant_id="tenant-b")
+```
+
 ---
 
 ## Cryptographic Seal
