@@ -21,6 +21,7 @@ import logging
 from unittest.mock import AsyncMock
 
 import pytest
+
 from qp_capsule.capsule import Capsule, TriggerSection
 from qp_capsule.chain import CapsuleChain, _MAX_CHAIN_RETRIES, _is_integrity_error
 from qp_capsule.exceptions import CapsuleError, ChainConflictError, ChainError, StorageError
@@ -128,7 +129,7 @@ class TestSealAndStoreRetry:
         chain = CapsuleChain(mock_storage)
         capsule = _make_capsule("retry-once")
 
-        result = await chain.seal_and_store(capsule, seal=temp_seal)
+        await chain.seal_and_store(capsule, seal=temp_seal)
 
         assert mock_storage.store.call_count == 2
         assert mock_storage.get_latest.call_count == 2
