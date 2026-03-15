@@ -87,7 +87,9 @@ class TestListBySessionBasicFunctionality:
     """
 
     @pytest.mark.asyncio
-    async def test_list_by_session_returns_matching_capsules(self, temp_storage, temp_seal, temp_chain):
+    async def test_list_by_session_returns_matching_capsules(
+        self, temp_storage, temp_seal, temp_chain
+    ):
         """
         list_by_session returns all capsules with the given session_id.
 
@@ -109,7 +111,9 @@ class TestListBySessionBasicFunctionality:
         )
 
     @pytest.mark.asyncio
-    async def test_list_by_session_returns_chronological_order(self, temp_storage, temp_seal, temp_chain):
+    async def test_list_by_session_returns_chronological_order(
+        self, temp_storage, temp_seal, temp_chain
+    ):
         """
         list_by_session returns capsules in chronological order (oldest first).
 
@@ -210,7 +214,9 @@ class TestSessionIsolation:
             )
 
     @pytest.mark.asyncio
-    async def test_many_concurrent_sessions_stay_isolated(self, temp_storage, temp_seal, temp_chain):
+    async def test_many_concurrent_sessions_stay_isolated(
+        self, temp_storage, temp_seal, temp_chain
+    ):
         """
         Stress test: many sessions created concurrently remain isolated.
 
@@ -294,7 +300,9 @@ class TestSessionEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_capsules_without_session_id_excluded(self, temp_storage, temp_seal, temp_chain):
+    async def test_capsules_without_session_id_excluded(
+        self, temp_storage, temp_seal, temp_chain
+    ):
         """
         Capsules with None session_id are not returned by session queries.
 
@@ -436,7 +444,9 @@ class TestConversationFlow:
     """
 
     @pytest.mark.asyncio
-    async def test_conversation_capsules_contain_full_context(self, temp_storage, temp_seal, temp_chain):
+    async def test_conversation_capsules_contain_full_context(
+        self, temp_storage, temp_seal, temp_chain
+    ):
         """
         Each capsule in a conversation contains full audit context.
 
