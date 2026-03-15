@@ -87,7 +87,7 @@ class TestListBySessionBasicFunctionality:
     """
 
     @pytest.mark.asyncio
-    async def test_list_by_session_returns_matching_capsules(self, temp_storage, temp_seal):
+    async def test_list_by_session_returns_matching_capsules(self, temp_storage, temp_seal, temp_chain):
         """
         list_by_session returns all capsules with the given session_id.
 
@@ -95,11 +95,9 @@ class TestListBySessionBasicFunctionality:
         """
         session_id = str(uuid.uuid4())
 
-        # Create 3 capsules in the same session
         for turn in range(1, 4):
             capsule = create_chat_capsule(session_id, f"Question {turn}", turn)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # Query by session
         results = await temp_storage.list_by_session(session_id)
@@ -111,7 +109,7 @@ class TestListBySessionBasicFunctionality:
         )
 
     @pytest.mark.asyncio
-    async def test_list_by_session_returns_chronological_order(self, temp_storage, temp_seal):
+    async def test_list_by_session_returns_chronological_order(self, temp_storage, temp_seal, temp_chain):
         """
         list_by_session returns capsules in chronological order (oldest first).
 
@@ -123,12 +121,10 @@ class TestListBySessionBasicFunctionality:
         questions = ["First question", "Second question", "Third question"]
         for turn, question in enumerate(questions, 1):
             capsule = create_chat_capsule(session_id, question, turn)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         results = await temp_storage.list_by_session(session_id)
 
-        # Verify order by checking questions
         actual_questions = [cap.trigger.request for cap in results]
         assert actual_questions == questions, (
             f"Expected chronological order: {questions}, "
@@ -169,7 +165,7 @@ class TestSessionIsolation:
     """
 
     @pytest.mark.asyncio
-    async def test_sessions_are_completely_isolated(self, temp_storage, temp_seal):
+    async def test_sessions_are_completely_isolated(self, temp_storage, temp_seal, temp_chain):
         """
         Capsules from different sessions never mix.
 
@@ -178,17 +174,13 @@ class TestSessionIsolation:
         session_a = str(uuid.uuid4())
         session_b = str(uuid.uuid4())
 
-        # Create capsules in session A
         for turn in range(1, 4):
             capsule = create_chat_capsule(session_a, f"Session A Turn {turn}", turn)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
-        # Create capsules in session B
-        for turn in range(1, 6):  # Different count to make detection easier
+        for turn in range(1, 6):
             capsule = create_chat_capsule(session_b, f"Session B Turn {turn}", turn)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # Query each session
         results_a = await temp_storage.list_by_session(session_a)
@@ -218,7 +210,7 @@ class TestSessionIsolation:
             )
 
     @pytest.mark.asyncio
-    async def test_many_concurrent_sessions_stay_isolated(self, temp_storage, temp_seal):
+    async def test_many_concurrent_sessions_stay_isolated(self, temp_storage, temp_seal, temp_chain):
         """
         Stress test: many sessions created concurrently remain isolated.
 
@@ -237,8 +229,7 @@ class TestSessionIsolation:
                     f"Turn {turn} in session {session_id[:8]}",
                     turn,
                 )
-                temp_seal.seal(capsule)
-                await temp_storage.store(capsule)
+                await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # Verify each session has exactly its capsules
         for session_id in sessions:
@@ -271,7 +262,7 @@ class TestSessionEdgeCases:
     """
 
     @pytest.mark.asyncio
-    async def test_single_capsule_session(self, temp_storage, temp_seal):
+    async def test_single_capsule_session(self, temp_storage, temp_seal, temp_chain):
         """
         Session with only one capsule is retrievable.
 
@@ -280,8 +271,7 @@ class TestSessionEdgeCases:
         session_id = str(uuid.uuid4())
 
         capsule = create_chat_capsule(session_id, "Only question", 1)
-        temp_seal.seal(capsule)
-        await temp_storage.store(capsule)
+        await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         results = await temp_storage.list_by_session(session_id)
 
@@ -304,7 +294,7 @@ class TestSessionEdgeCases:
         )
 
     @pytest.mark.asyncio
-    async def test_capsules_without_session_id_excluded(self, temp_storage, temp_seal):
+    async def test_capsules_without_session_id_excluded(self, temp_storage, temp_seal, temp_chain):
         """
         Capsules with None session_id are not returned by session queries.
 
@@ -314,8 +304,7 @@ class TestSessionEdgeCases:
 
         # Create capsule WITH session_id
         capsule_with_session = create_chat_capsule(session_id, "Has session", 1)
-        temp_seal.seal(capsule_with_session)
-        await temp_storage.store(capsule_with_session)
+        await temp_chain.seal_and_store(capsule_with_session, seal=temp_seal)
 
         # Create capsule WITHOUT session_id (e.g., one-shot ask)
         capsule_no_session = Capsule(
@@ -331,8 +320,7 @@ class TestSessionEdgeCases:
             ),
             outcome=OutcomeSection(status="success", result="done"),
         )
-        temp_seal.seal(capsule_no_session)
-        await temp_storage.store(capsule_no_session)
+        await temp_chain.seal_and_store(capsule_no_session, seal=temp_seal)
 
         results = await temp_storage.list_by_session(session_id)
 
@@ -344,7 +332,7 @@ class TestSessionEdgeCases:
         assert results[0].context.session_id == session_id
 
     @pytest.mark.asyncio
-    async def test_session_id_is_case_sensitive(self, temp_storage, temp_seal):
+    async def test_session_id_is_case_sensitive(self, temp_storage, temp_seal, temp_chain):
         """
         Session IDs are case-sensitive (UUIDs should match exactly).
 
@@ -355,8 +343,7 @@ class TestSessionEdgeCases:
 
         # Create capsule with lowercase session
         capsule = create_chat_capsule(session_lower, "Lowercase session", 1)
-        temp_seal.seal(capsule)
-        await temp_storage.store(capsule)
+        await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # Query with uppercase should return nothing
         results = await temp_storage.list_by_session(session_upper)
@@ -380,7 +367,7 @@ class TestSessionStress:
     """
 
     @pytest.mark.asyncio
-    async def test_long_conversation_retrieval(self, temp_storage, temp_seal):
+    async def test_long_conversation_retrieval(self, temp_storage, temp_seal, temp_chain):
         """
         Long conversation (100 turns) retrieves correctly in order.
 
@@ -392,8 +379,7 @@ class TestSessionStress:
         # Create a long conversation
         for turn in range(1, num_turns + 1):
             capsule = create_chat_capsule(session_id, f"Turn {turn}", turn)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         results = await temp_storage.list_by_session(session_id)
 
@@ -410,7 +396,7 @@ class TestSessionStress:
             )
 
     @pytest.mark.asyncio
-    async def test_uuid_session_ids_dont_collide(self, temp_storage, temp_seal):
+    async def test_uuid_session_ids_dont_collide(self, temp_storage, temp_seal, temp_chain):
         """
         Property: UUIDs should never collide in practice.
 
@@ -426,8 +412,7 @@ class TestSessionStress:
         # Create one capsule per session
         for session_id in sessions:
             capsule = create_chat_capsule(session_id, "Single turn", 1)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # Verify each session has exactly one capsule
         for session_id in sessions:
@@ -451,7 +436,7 @@ class TestConversationFlow:
     """
 
     @pytest.mark.asyncio
-    async def test_conversation_capsules_contain_full_context(self, temp_storage, temp_seal):
+    async def test_conversation_capsules_contain_full_context(self, temp_storage, temp_seal, temp_chain):
         """
         Each capsule in a conversation contains full audit context.
 
@@ -495,8 +480,7 @@ class TestConversationFlow:
                     result=response,
                 ),
             )
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # Retrieve and verify full context
         results = await temp_storage.list_by_session(session_id)
@@ -535,7 +519,7 @@ class TestConversationFlow:
             )
 
     @pytest.mark.asyncio
-    async def test_new_session_starts_fresh(self, temp_storage, temp_seal):
+    async def test_new_session_starts_fresh(self, temp_storage, temp_seal, temp_chain):
         """
         Starting a new session (/new command) gives fresh empty history.
 
@@ -547,8 +531,7 @@ class TestConversationFlow:
         # Create conversation in old session
         for turn in range(1, 6):
             capsule = create_chat_capsule(old_session, f"Old turn {turn}", turn)
-            temp_seal.seal(capsule)
-            await temp_storage.store(capsule)
+            await temp_chain.seal_and_store(capsule, seal=temp_seal)
 
         # New session should be empty
         new_results = await temp_storage.list_by_session(new_session)
