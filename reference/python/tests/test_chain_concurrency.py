@@ -24,8 +24,8 @@ import pytest
 
 from qp_capsule.capsule import Capsule, TriggerSection
 from qp_capsule.chain import (
-    CapsuleChain,
     _MAX_CHAIN_RETRIES,
+    CapsuleChain,
     _is_integrity_error,
 )
 from qp_capsule.exceptions import (
